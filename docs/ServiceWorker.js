@@ -1,9 +1,9 @@
 const cacheName = "DefaultCompany-WildMooseStudio-0.1";
 const contentToCache = [
-    "Build/Html5.loader.js",
-    "Build/Html5.framework.js.gz",
-    "Build/Html5.data.gz",
-    "Build/Html5.wasm.gz",
+    "Build/docs.loader.js",
+    "Build/docs.framework.js.gz",
+    "Build/docs.data.gz",
+    "Build/docs.wasm.gz",
     "TemplateData/style.css"
 
 ];
