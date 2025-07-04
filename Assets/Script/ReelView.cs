@@ -9,20 +9,19 @@ public class ReelView : MonoBehaviour
 {
     private List<Image> symbolImages = new List<Image>();
     private bool isSpinning;
-    private float spinDuration = 2f;
-    private float symbolHeight = 100f;
+	private SlotConfig config;
+	public void Initialize(SlotConfig config, GameObject symbolPrefab)
+	{
+		this.config = config;
+		for (int i = 0; i < config.symbolsPerReel; i++)
+		{
+			GameObject symbolObj = Instantiate(symbolPrefab, transform);
+			symbolImages.Add(symbolObj.GetComponent<Image>());
+			symbolObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * config.symbolHeight);
+		}
+	}
 
-    public void Initialize(int symbolsPerReel, GameObject symbolPrefab, SlotConfig.SymbolData[] symbols)
-    {
-        for (int i = 0; i < symbolsPerReel; i++)
-        {
-            GameObject symbolObj = Instantiate(symbolPrefab, transform);
-            symbolImages.Add(symbolObj.GetComponent<Image>());
-            symbolObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * symbolHeight);
-        }
-    }
-
-    public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
+	public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
     {
         if (isSpinning) return;
         isSpinning = true;
@@ -37,15 +36,15 @@ public class ReelView : MonoBehaviour
     private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
     {
         float elapsed = 0;
-        while (elapsed < spinDuration)
+        while (elapsed < config.spinDuration)
         {
             foreach (var image in symbolImages)
             {
                 RectTransform rect = image.GetComponent<RectTransform>();
                 rect.anchoredPosition += new Vector2(0, -Time.deltaTime * 1000);
-                if (rect.anchoredPosition.y < -symbolHeight * (symbolImages.Count - 1))
+                if (rect.anchoredPosition.y < -config.symbolHeight * (symbolImages.Count - 1))
                 {
-                    rect.anchoredPosition += new Vector2(0, symbolHeight * symbolImages.Count);
+                    rect.anchoredPosition += new Vector2(0, config.symbolHeight * symbolImages.Count);
                 }
             }
             elapsed += Time.deltaTime;
@@ -55,13 +54,13 @@ public class ReelView : MonoBehaviour
         for (int i = 0; i < symbolImages.Count; i++)
         {
             symbolImages[i].sprite = targetSymbols[i].sprite;
-            symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * symbolHeight);
+            symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * config.symbolHeight);
         }
 
-        if (targetSymbols[0].sprite == targetSymbols[1].sprite && targetSymbols[1].sprite == targetSymbols[2].sprite)
-        {
-            StartCoroutine(WinAnimation());
-        }
+        // if (targetSymbols[0].sprite == targetSymbols[1].sprite && targetSymbols[1].sprite == targetSymbols[2].sprite)
+        // {
+        //     StartCoroutine(WinAnimation());
+        // }
     }
 
     private IEnumerator WinAnimation()

@@ -15,4 +15,6 @@ public class SlotConfig : ScriptableObject
 	public int symbolsPerReel = 3;
 	public SymbolData[] symbols; // 所有符號的資料
 	public float reelSpacing = 150f;
+	public float symbolHeight = 100f;
+	public float spinDuration = 2f;
 }

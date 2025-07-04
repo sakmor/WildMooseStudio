@@ -37,7 +37,7 @@ public class SlotView : MonoBehaviour
 			reelObj.AddComponent<RectTransform>();
 			reelObj.transform.SetParent(reelContainer, false);
 			ReelView reelView = reelObj.AddComponent<ReelView>();
-			reelView.Initialize(config.symbolsPerReel, symbolPrefab, config.symbols);
+			reelView.Initialize(config, symbolPrefab); 
 			reelViews.Add(reelView);
 			reelObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(i * config.reelSpacing, 0);
 		}

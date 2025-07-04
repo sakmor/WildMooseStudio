@@ -67,19 +67,19 @@ public class SlotModel
 
 	private void CheckWin()
 	{
-		List<SlotConfig.SymbolData> middleRow = new List<SlotConfig.SymbolData>();
-		foreach (var reel in Reels)
-		{
-			middleRow.Add(reel.VisibleSymbols[1]);
-		}
+		// List<SlotConfig.SymbolData> middleRow = new List<SlotConfig.SymbolData>();
+		// foreach (var reel in Reels)
+		// {
+		// 	middleRow.Add(reel.VisibleSymbols[1]);
+		// }
 
-		if (middleRow[0].sprite == middleRow[1].sprite && middleRow[1].sprite == middleRow[2].sprite)
-		{
-			WinAmount = Mathf.FloorToInt(Bet * middleRow[0].payout);
-			Credits += WinAmount;
-			OnWinAmountChanged?.Invoke();
-			OnCreditsChanged?.Invoke();
-		}
+		// if (middleRow[0].sprite == middleRow[1].sprite && middleRow[1].sprite == middleRow[2].sprite)
+		// {
+		// 	WinAmount = Mathf.FloorToInt(Bet * middleRow[0].payout);
+		// 	Credits += WinAmount;
+		// 	OnWinAmountChanged?.Invoke();
+		// 	OnCreditsChanged?.Invoke();
+		// }
 	}
 }
 
