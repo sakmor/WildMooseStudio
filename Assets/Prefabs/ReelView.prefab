@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 74263322078633237}
   - component: {fileID: 4562941447686023559}
-  - component: {fileID: 3289305524734951734}
   m_Layer: 5
   m_Name: ReelView
   m_TagString: Untagged
@@ -46,20 +45,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2141130869982868396}
   m_CullTransparentMesh: 1
---- !u!114 &3289305524734951734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2141130869982868396}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d348ff24d4db87449c08b7cc93ba885, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  slotSymbolPrefab: {fileID: 1451826804708283149, guid: 2c806a1faaae13849adc54cd69ae4573, type: 3}
-  container: {fileID: 74263322078633237}
 --- !u!1001 &2739949415375930397
 PrefabInstance:
   m_ObjectHideFlags: 0

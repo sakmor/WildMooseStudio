@@ -1,45 +1,77 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class SlotView : MonoBehaviour
 {
-    [SerializeField] Image[] slotImages; // 一維數組，動態大小
     [SerializeField] SlotConfig config;
-    [SerializeField] Text scoreText;
-    [SerializeField] Button spinButton;
-    int rows;
-    int columns;
+    [SerializeField] Transform reelContainer;
+    [SerializeField] GameObject symbolPrefab;
+    [SerializeField] Text creditsText;
+    [SerializeField] Text betText;
+    [SerializeField] Text winText;
 
-    public void Initialize(SlotConfig slotConfig, int rows, int columns)
+    private List<ReelView> reelViews = new List<ReelView>();
+    private SlotModel model;
+
+    public void Initialize(SlotModel model)
     {
-        config = slotConfig;
-        this.rows = rows;
-        this.columns = columns;
-        if (slotImages.Length != rows * columns)
+        this.model = model;
+        model.OnSpinStarted += StartSpinAnimation;
+        model.OnSpinFinished += StopSpinAnimation;
+        model.OnCreditsChanged += UpdateCreditsUI;
+        model.OnWinAmountChanged += UpdateWinUI;
+        SetupReels();
+        UpdateCreditsUI();
+        UpdateBetUI();
+        UpdateWinUI();
+    }
+
+	private void SetupReels()
+	{
+		for (int i = 0; i < config.reelCount; i++)
+		{
+			GameObject reelObj = new GameObject($"Reel_{i}");
+			reelObj.AddComponent<RectTransform>();
+			reelObj.transform.SetParent(reelContainer, false);
+			ReelView reelView = reelObj.AddComponent<ReelView>();
+			reelView.Initialize(config.symbolsPerReel, symbolPrefab, config.symbols);
+			reelViews.Add(reelView);
+			reelObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(i * config.reelSpacing, 0);
+		}
+	}
+
+	private void StartSpinAnimation()
+    {
+        for (int i = 0; i < reelViews.Count; i++)
         {
-            Debug.LogError($"slotImages 數量 ({slotImages.Length}) 與格子尺寸 ({rows}x{columns}) 不匹配");
+            reelViews[i].StartSpin(model.Reels[i].VisibleSymbols);
         }
     }
 
-    public void UpdateGrid(int[,] grid)
+    private void StopSpinAnimation()
     {
-        for (int i = 0; i < rows; i++)
+        for (int i = 0; i < reelViews.Count; i++)
         {
-            for (int j = 0; j < columns; j++)
-            {
-                int index = i * columns + j; // 映射到一維索引
-                slotImages[index].sprite = config.symbols[grid[i, j]].sprite;
-            }
+            reelViews[i].StopSpin(model.Reels[i].VisibleSymbols);
         }
     }
 
-    public void UpdateScore(float score)
+    private void UpdateCreditsUI()
     {
-        scoreText.text = $"{score:F2}";
+        creditsText.text = $"Credits: {model.Credits}";
     }
 
-    public void SetSpinButton(System.Action onClick)
+    private void UpdateBetUI()
     {
-        spinButton.onClick.AddListener(() => onClick?.Invoke());
+        betText.text = $"Bet: {model.Bet}";
+    }
+
+    private void UpdateWinUI()
+    {
+        winText.text = $"Win: {model.WinAmount}";
     }
 }
+

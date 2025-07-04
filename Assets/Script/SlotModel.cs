@@ -1,84 +1,85 @@
-using UnityEngine;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class SlotModel
 {
-    public int[,] Grid { get; private set; }
-    public float Score { get; private set; }
-    public event Action OnGridUpdated;
-    public event Action<float> OnScoreUpdated;
-    SlotConfig config;
-    int rows;
-    int columns;
+	public List<ReelModel> Reels { get; private set; }
+	public int Credits { get; private set; }
+	public int Bet { get; private set; }
+	public int WinAmount { get; private set; }
+	public bool IsSpinning { get; private set; }
+	public event Action OnSpinStarted;
+	public event Action OnSpinFinished;
+	public event Action OnCreditsChanged;
+	public event Action OnWinAmountChanged;
 
-    public void Initialize(SlotConfig slotConfig, int rows, int columns)
-    {
-        config = slotConfig;
-        this.rows = rows;
-        this.columns = columns;
-        Grid = new int[rows, columns];
-    }
+	private SlotConfig config;
+	private readonly System.Random random;
 
-    public void Spin()
-    {
-        float[] probabilities = new float[config.symbols.Length];
-        float total = 0;
-        for (int i = 0; i < config.symbols.Length; i++)
-        {
-            probabilities[i] = config.symbols[i].probability;
-            total += probabilities[i];
-        }
-        for (int i = 0; i < probabilities.Length; i++)
-        {
-            probabilities[i] /= total; // 正規化機率
-        }
+	public SlotModel()
+	{
+		Credits = 1000;
+		Bet = 10;
+		WinAmount = 0;
+		IsSpinning = false;
+		random = new System.Random();
+	}
 
-        for (int i = 0; i < rows; i++)
-        {
-            for (int j = 0; j < columns; j++)
-            {
-                Grid[i, j] = GetRandomSymbol(probabilities);
-            }
-        }
-        CheckWin();
-        OnGridUpdated?.Invoke();
-    }
+	public void Initialize(SlotConfig config)
+	{
+		this.config = config;
+		Reels = new List<ReelModel>();
+		for (int i = 0; i < config.reelCount; i++)
+		{
+			Reels.Add(new ReelModel(config.symbols, config.symbolsPerReel, random));
+		}
+	}
 
-    int GetRandomSymbol(float[] probabilities)
-    {
-        float randomValue = UnityEngine.Random.value;
-        float cumulative = 0;
-        for (int i = 0; i < probabilities.Length; i++)
-        {
-            cumulative += probabilities[i];
-            if (randomValue <= cumulative)
-            {
-                return i;
-            }
-        }
-        return probabilities.Length - 1;
-    }
+	public void SetBet(int bet)
+	{
+		if (bet > 0 && bet <= Credits)
+		{
+			Bet = bet;
+			OnCreditsChanged?.Invoke();
+		}
+	}
 
-    void CheckWin()
-    {
-        float newScore = 0;
-        for (int i = 0; i < rows; i++)
-        {
-            bool isWin = true;
-            for (int j = 1; j < columns; j++)
-            {
-                if (Grid[i, j] != Grid[i, 0])
-                {
-                    isWin = false;
-                    break;
-                }
-            }
-            if (isWin)
-            {
-                newScore += config.symbols[Grid[i, 0]].payout;
-            }
-        }
-        Score += newScore;
-        OnScoreUpdated?.Invoke(Score);
-    }
+	public void Spin()
+	{
+		if (IsSpinning || Credits < Bet || config == null) return;
+
+		IsSpinning = true;
+		Credits -= Bet;
+		WinAmount = 0;
+		OnSpinStarted?.Invoke();
+		OnCreditsChanged?.Invoke();
+
+		foreach (var reel in Reels)
+		{
+			reel.Spin();
+		}
+
+		CheckWin();
+		IsSpinning = false;
+		OnSpinFinished?.Invoke();
+	}
+
+	private void CheckWin()
+	{
+		List<SlotConfig.SymbolData> middleRow = new List<SlotConfig.SymbolData>();
+		foreach (var reel in Reels)
+		{
+			middleRow.Add(reel.VisibleSymbols[1]);
+		}
+
+		if (middleRow[0].sprite == middleRow[1].sprite && middleRow[1].sprite == middleRow[2].sprite)
+		{
+			WinAmount = Mathf.FloorToInt(Bet * middleRow[0].payout);
+			Credits += WinAmount;
+			OnWinAmountChanged?.Invoke();
+			OnCreditsChanged?.Invoke();
+		}
+	}
 }
+

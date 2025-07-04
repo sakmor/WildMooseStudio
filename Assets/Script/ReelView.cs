@@ -1,70 +1,82 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
 
 public class ReelView : MonoBehaviour
 {
-    [SerializeField] GameObject slotSymbolPrefab; // SlotSymbol.prefab
-    [SerializeField] RectTransform container; // 滾輪容器
-    List<Image> symbolImages; // 符號的 Image 列表
-    SlotConfig config;
-    int symbolsPerReel;
-    float spaceY;
-    float spinDuration;
-    float spinSpeed;
+    private List<Image> symbolImages = new List<Image>();
+    private bool isSpinning;
+    private float spinDuration = 2f;
+    private float symbolHeight = 100f;
 
-    public void Initialize(SlotConfig slotConfig, int symbolsPerReel, float spaceY, float spinDuration, float spinSpeed)
+    public void Initialize(int symbolsPerReel, GameObject symbolPrefab, SlotConfig.SymbolData[] symbols)
     {
-        config = slotConfig;
-        this.symbolsPerReel = symbolsPerReel;
-        this.spaceY = spaceY;
-        this.spinDuration = spinDuration;
-        this.spinSpeed = spinSpeed;
-
-        symbolImages = new List<Image>();
-        for (int k = 0; k < symbolsPerReel; k++)
+        for (int i = 0; i < symbolsPerReel; i++)
         {
-            GameObject symbolObj = Instantiate(slotSymbolPrefab, container);
-            RectTransform symbolRt = symbolObj.GetComponent<RectTransform>();
-            symbolRt.anchoredPosition = new Vector2(0, k * spaceY); // Y 軸位置
-            Image symbolImage = symbolObj.GetComponent<Image>();
-            symbolImage.sprite = config.symbols[Random.Range(0, config.symbols.Length)].sprite; // 初始隨機符號
-            symbolImages.Add(symbolImage);
+            GameObject symbolObj = Instantiate(symbolPrefab, transform);
+            symbolImages.Add(symbolObj.GetComponent<Image>());
+            symbolObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * symbolHeight);
         }
     }
 
-    public IEnumerator Spin(int targetSymbolIndex, float stopTime)
+    public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
+    {
+        if (isSpinning) return;
+        isSpinning = true;
+        StartCoroutine(SpinAnimation(targetSymbols));
+    }
+
+    public void StopSpin(List<SlotConfig.SymbolData> targetSymbols)
+    {
+        isSpinning = false;
+    }
+
+    private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
     {
         float elapsed = 0;
-        while (elapsed < stopTime)
+        while (elapsed < spinDuration)
         {
-            elapsed += Time.deltaTime;
-            container.anchoredPosition -= new Vector2(0, spinSpeed * Time.deltaTime);
-            if (container.anchoredPosition.y <= -spaceY * (symbolsPerReel - 1))
+            foreach (var image in symbolImages)
             {
-                container.anchoredPosition += new Vector2(0, spaceY * symbolsPerReel); // 循環重置
-                UpdateSymbols();
+                RectTransform rect = image.GetComponent<RectTransform>();
+                rect.anchoredPosition += new Vector2(0, -Time.deltaTime * 1000);
+                if (rect.anchoredPosition.y < -symbolHeight * (symbolImages.Count - 1))
+                {
+                    rect.anchoredPosition += new Vector2(0, symbolHeight * symbolImages.Count);
+                }
             }
+            elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // 對齊最終符號
-        float targetY = Mathf.Round(container.anchoredPosition.y / spaceY) * spaceY;
-        container.anchoredPosition = new Vector2(0, targetY);
-        symbolImages[0].sprite = config.symbols[targetSymbolIndex].sprite; // 設置最終符號
-    }
-
-    void UpdateSymbols()
-    {
-        foreach (Image img in symbolImages)
+        for (int i = 0; i < symbolImages.Count; i++)
         {
-            img.sprite = config.symbols[Random.Range(0, config.symbols.Length)].sprite;
+            symbolImages[i].sprite = targetSymbols[i].sprite;
+            symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * symbolHeight);
+        }
+
+        if (targetSymbols[0].sprite == targetSymbols[1].sprite && targetSymbols[1].sprite == targetSymbols[2].sprite)
+        {
+            StartCoroutine(WinAnimation());
         }
     }
 
-    public void SetSymbol(int symbolIndex)
+    private IEnumerator WinAnimation()
     {
-        symbolImages[0].sprite = config.symbols[symbolIndex].sprite; // 設置 Y=0 的符號
+        for (int i = 0; i < 6; i++)
+        {
+            foreach (var image in symbolImages)
+            {
+                image.enabled = !image.enabled;
+            }
+            yield return new WaitForSeconds(0.2f);
+        }
+        foreach (var image in symbolImages)
+        {
+            image.enabled = true;
+        }
     }
 }
