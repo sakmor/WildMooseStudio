@@ -1,81 +1,32 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-
 
 public class ReelView : MonoBehaviour
 {
     private List<Image> symbolImages = new List<Image>();
-    private bool isSpinning;
-	private SlotConfig config;
-	public void Initialize(SlotConfig config, GameObject symbolPrefab)
-	{
-		this.config = config;
-		for (int i = 0; i < config.symbolsPerReel; i++)
-		{
-			GameObject symbolObj = Instantiate(symbolPrefab, transform);
-			symbolImages.Add(symbolObj.GetComponent<Image>());
-			symbolObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * config.symbolHeight);
-		}
-	}
+    private ReelAnimation animation;
 
-	public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
+    public void Initialize(SlotConfig config, GameObject symbolPrefab)
     {
-        if (isSpinning) return;
-        isSpinning = true;
-        StartCoroutine(SpinAnimation(targetSymbols));
+        float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
+        for (int i = 0; i < config.symbolsPerReel; i++)
+        {
+            GameObject symbolObj = Instantiate(symbolPrefab, transform);
+            symbolImages.Add(symbolObj.GetComponent<Image>());
+            symbolObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * config.symbolHeight);
+        }
+        animation = gameObject.AddComponent<ReelAnimation>();
+        animation.Initialize(config, symbolImages);
+    }
+
+    public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
+    {
+        animation.StartSpin(targetSymbols);
     }
 
     public void StopSpin(List<SlotConfig.SymbolData> targetSymbols)
     {
-        isSpinning = false;
-    }
-
-    private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
-    {
-        float elapsed = 0;
-        while (elapsed < config.spinDuration)
-        {
-            foreach (var image in symbolImages)
-            {
-                RectTransform rect = image.GetComponent<RectTransform>();
-                rect.anchoredPosition += new Vector2(0, -Time.deltaTime * 1000);
-                if (rect.anchoredPosition.y < -config.symbolHeight * (symbolImages.Count - 1))
-                {
-                    rect.anchoredPosition += new Vector2(0, config.symbolHeight * symbolImages.Count);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        for (int i = 0; i < symbolImages.Count; i++)
-        {
-            symbolImages[i].sprite = targetSymbols[i].sprite;
-            symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -i * config.symbolHeight);
-        }
-
-        // if (targetSymbols[0].sprite == targetSymbols[1].sprite && targetSymbols[1].sprite == targetSymbols[2].sprite)
-        // {
-        //     StartCoroutine(WinAnimation());
-        // }
-    }
-
-    private IEnumerator WinAnimation()
-    {
-        for (int i = 0; i < 6; i++)
-        {
-            foreach (var image in symbolImages)
-            {
-                image.enabled = !image.enabled;
-            }
-            yield return new WaitForSeconds(0.2f);
-        }
-        foreach (var image in symbolImages)
-        {
-            image.enabled = true;
-        }
+        animation.StopSpin(targetSymbols);
     }
 }

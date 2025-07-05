@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class SlotView : MonoBehaviour
 {
@@ -29,21 +28,23 @@ public class SlotView : MonoBehaviour
         UpdateWinUI();
     }
 
-	private void SetupReels()
-	{
-		for (int i = 0; i < config.reelCount; i++)
-		{
-			GameObject reelObj = new GameObject($"Reel_{i}");
-			reelObj.AddComponent<RectTransform>();
-			reelObj.transform.SetParent(reelContainer, false);
-			ReelView reelView = reelObj.AddComponent<ReelView>();
-			reelView.Initialize(config, symbolPrefab); 
-			reelViews.Add(reelView);
-			reelObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(i * config.reelSpacing, 0);
-		}
-	}
+    private void SetupReels()
+    {
+        float totalWidth = (config.reelCount - 1) * config.reelSpacing;
+        float startX = -totalWidth / 2;
+        for (int i = 0; i < config.reelCount; i++)
+        {
+            GameObject reelObj = new GameObject($"Reel_{i}");
+            reelObj.AddComponent<RectTransform>();
+            reelObj.transform.SetParent(reelContainer, false);
+            ReelView reelView = reelObj.AddComponent<ReelView>();
+            reelView.Initialize(config, symbolPrefab);
+            reelViews.Add(reelView);
+            reelObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(startX + i * config.reelSpacing, 0);
+        }
+    }
 
-	private void StartSpinAnimation()
+    private void StartSpinAnimation()
     {
         for (int i = 0; i < reelViews.Count; i++)
         {
@@ -74,4 +75,3 @@ public class SlotView : MonoBehaviour
         winText.text = $"Win: {model.WinAmount}";
     }
 }
-
