@@ -4,20 +4,22 @@ using UnityEngine.UI;
 public class SlotController : MonoBehaviour
 {
 	[SerializeField] SlotConfig config;
-	[SerializeField] SlotView slotView;
+	[SerializeField] SlotView view;
 	[SerializeField] Button spinButton;
-	SlotModel slotModel;
+	private SlotModel model;
 
 	void Start()
 	{
-		slotModel = new SlotModel();
-		slotModel.Initialize(config);
-		slotView.Initialize(slotModel);
-		spinButton.onClick.AddListener(OnSpin);
+		model = new SlotModel(config);
+		view.Initialize(model);
+		spinButton.onClick.AddListener(OnSpinButtonClicked);
 	}
 
-	void OnSpin()
+	public void OnSpinButtonClicked()
 	{
-		slotModel.Spin();
+		if (model.Credits >= model.Bet)
+		{
+			model.Spin();
+		}
 	}
 }
