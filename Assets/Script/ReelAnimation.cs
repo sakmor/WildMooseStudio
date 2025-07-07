@@ -8,12 +8,32 @@ public class ReelAnimation : MonoBehaviour
 	private List<Image> symbolImages;
 	private SlotConfig config;
 	private bool isSpinning;
+	private float totalHeight;
+	private float fullCycleDistance;
+	private float spinSpeed;
+
+	[SerializeField] private AnimationCurve beginAccelerationCurve = AnimationCurve.Linear(0, 0, 1, 1); // 緩加速曲線
+	[SerializeField] private AnimationCurve finalDecelerationCurve = AnimationCurve.Linear(0, 1, 1, 0); // 緩減速曲線
+
+	#region 初始化
 
 	public void Initialize(SlotConfig config, List<Image> symbolImages)
 	{
 		this.config = config;
 		this.symbolImages = symbolImages;
+		CalculateSpinParameters();
 	}
+
+	private void CalculateSpinParameters()
+	{
+		totalHeight = (config.symbolsPerReel - 1) * config.symbolHeight;
+		fullCycleDistance = totalHeight + config.symbolHeight;
+		spinSpeed = (config.spinCycles * fullCycleDistance) / config.spinDuration;
+	}
+
+	#endregion
+
+	#region 公開方法
 
 	public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
 	{
@@ -32,69 +52,67 @@ public class ReelAnimation : MonoBehaviour
 		StartCoroutine(WinAnimation());
 	}
 
+	#endregion
+
+	#region 動畫邏輯
+
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
-		float elapsed = 0;
-		float totalHeight = (config.symbolsPerReel - 1) * config.symbolHeight;
-		float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
-		float cycleDistance = totalHeight + config.symbolHeight;
-		// 修改：使用基於 spinCycles 的 spinSpeed
-		float spinSpeed = (config.spinCycles * cycleDistance) / config.spinDuration;
+		// 初始滾動階段（單輪，緩加速）
+		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, beginAccelerationCurve));
+		// 快速滾動階段（多輪，緩減速）
+		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
+		// 最終符號顯示與對齊階段（單輪）
+		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, finalDecelerationCurve));
+		isSpinning = false;
+	}
 
-		// 主動畫階段
-		while (elapsed < config.spinDuration)
+	private IEnumerator UpdateSymbolPositions(float duration, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
+	{
+		float elapsed = 0;
+		int symbolsSetCount = 0; // 追蹤已設置的符號數量
+
+		while (elapsed < duration)
 		{
-			foreach (var image in symbolImages)
+			// 計算當前速度（若有速度曲線，則根據曲線調整）
+			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
+
+			for (int i = 0; i < symbolImages.Count; i++)
 			{
-				RectTransform rect = image.GetComponent<RectTransform>();
-				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * spinSpeed);
+				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
+				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * currentSpeed);
+
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
-					rect.anchoredPosition += new Vector2(0, totalHeight + config.symbolHeight);
-					image.sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
+					rect.anchoredPosition += new Vector2(0, fullCycleDistance);
+					if (isFinalPhase && symbolsSetCount < symbolImages.Count)
+					{
+						// 最終階段設置目標符號
+						symbolImages[i].sprite = targetSymbols[i].sprite;
+						symbolsSetCount++;
+					}
+					else
+					{
+						// 隨機符號
+						symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
+					}
 				}
 			}
 			elapsed += Time.deltaTime;
 			yield return null;
 		}
 
-		// 修改：最終階段，滾動一輪並顯示最終符號
-		float finalElapsed = 0;
-		float finalDuration = cycleDistance / spinSpeed; // 單輪滾動時間
-		List<bool> symbolSet = new List<bool>(new bool[symbolImages.Count]); // 追蹤是否已設置最終符號
-
-		while (finalElapsed < finalDuration)
+		// 最終階段的精確對齊
+		if (isFinalPhase)
 		{
+			float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
-				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * spinSpeed);
-				if (rect.anchoredPosition.y < -totalHeight / 2)
-				{
-					rect.anchoredPosition += new Vector2(0, totalHeight + config.symbolHeight);
-					if (!symbolSet[i]) // 僅設置一次最終符號
-					{
-						symbolImages[i].sprite = targetSymbols[i].sprite;
-						symbolSet[i] = true;
-					}
-				}
+				symbolImages[i].sprite = targetSymbols[i].sprite;
+				symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * config.symbolHeight);
 			}
-			finalElapsed += Time.deltaTime;
-			yield return null;
 		}
 
-		// 修改：確保最終精確對齊
-		UpdateSymbols(targetSymbols);
-	}
-
-	private void UpdateSymbols(List<SlotConfig.SymbolData> targetSymbols)
-	{
-		float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
-		for (int i = 0; i < symbolImages.Count; i++)
-		{
-			symbolImages[i].sprite = targetSymbols[i].sprite;
-			symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * config.symbolHeight);
-		}
 	}
 
 	private IEnumerator WinAnimation()
@@ -112,4 +130,6 @@ public class ReelAnimation : MonoBehaviour
 			image.enabled = true;
 		}
 	}
+
+	#endregion
 }
