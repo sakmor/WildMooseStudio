@@ -37,10 +37,11 @@ public class ReelAnimation : MonoBehaviour
 		float elapsed = 0;
 		float totalHeight = (config.symbolsPerReel - 1) * config.symbolHeight;
 		float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
-		// 修改：動態計算 spinSpeed 基於固定循環次數
 		float cycleDistance = totalHeight + config.symbolHeight;
+		// 修改：使用基於 spinCycles 的 spinSpeed
 		float spinSpeed = (config.spinCycles * cycleDistance) / config.spinDuration;
 
+		// 主動畫階段
 		while (elapsed < config.spinDuration)
 		{
 			foreach (var image in symbolImages)
@@ -57,7 +58,32 @@ public class ReelAnimation : MonoBehaviour
 			yield return null;
 		}
 
-		// 修改：直接設置最終位置和符號，無需插值
+		// 修改：最終階段，滾動一輪並顯示最終符號
+		float finalElapsed = 0;
+		float finalDuration = cycleDistance / spinSpeed; // 單輪滾動時間
+		List<bool> symbolSet = new List<bool>(new bool[symbolImages.Count]); // 追蹤是否已設置最終符號
+
+		while (finalElapsed < finalDuration)
+		{
+			for (int i = 0; i < symbolImages.Count; i++)
+			{
+				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
+				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * spinSpeed);
+				if (rect.anchoredPosition.y < -totalHeight / 2)
+				{
+					rect.anchoredPosition += new Vector2(0, totalHeight + config.symbolHeight);
+					if (!symbolSet[i]) // 僅設置一次最終符號
+					{
+						symbolImages[i].sprite = targetSymbols[i].sprite;
+						symbolSet[i] = true;
+					}
+				}
+			}
+			finalElapsed += Time.deltaTime;
+			yield return null;
+		}
+
+		// 修改：確保最終精確對齊
 		UpdateSymbols(targetSymbols);
 	}
 
