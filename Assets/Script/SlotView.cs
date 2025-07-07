@@ -57,7 +57,7 @@ public class SlotView : MonoBehaviour
 	{
 		for (int i = 0; i < reelViews.Count; i++)
 		{
-			reelViews[i].StopSpin(model.Reels[i].VisibleSymbols);
+			reelViews[i].StopSpin();
 		}
 	}
 

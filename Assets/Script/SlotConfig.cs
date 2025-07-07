@@ -17,5 +17,5 @@ public class SlotConfig : ScriptableObject
 	public float reelSpacing = 150f;
 	public float symbolHeight = 100f;
 	public float spinDuration = 2f;
-	public float spinSpeed = 1000f;
+	public int spinCycles = 5;
 }

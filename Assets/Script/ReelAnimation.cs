@@ -1,5 +1,3 @@
-
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,7 +22,7 @@ public class ReelAnimation : MonoBehaviour
 		StartCoroutine(SpinAnimation(targetSymbols));
 	}
 
-	public void StopSpin(List<SlotConfig.SymbolData> targetSymbols)
+	public void StopSpin()
 	{
 		isSpinning = false;
 	}
@@ -38,21 +36,33 @@ public class ReelAnimation : MonoBehaviour
 	{
 		float elapsed = 0;
 		float totalHeight = (config.symbolsPerReel - 1) * config.symbolHeight;
+		float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
+		// 修改：動態計算 spinSpeed 基於固定循環次數
+		float cycleDistance = totalHeight + config.symbolHeight;
+		float spinSpeed = (config.spinCycles * cycleDistance) / config.spinDuration;
+
 		while (elapsed < config.spinDuration)
 		{
 			foreach (var image in symbolImages)
 			{
 				RectTransform rect = image.GetComponent<RectTransform>();
-				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * config.spinSpeed);
+				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * spinSpeed);
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
 					rect.anchoredPosition += new Vector2(0, totalHeight + config.symbolHeight);
+					image.sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
 				}
 			}
 			elapsed += Time.deltaTime;
 			yield return null;
 		}
 
+		// 修改：直接設置最終位置和符號，無需插值
+		UpdateSymbols(targetSymbols);
+	}
+
+	private void UpdateSymbols(List<SlotConfig.SymbolData> targetSymbols)
+	{
 		float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
 		for (int i = 0; i < symbolImages.Count; i++)
 		{
@@ -77,4 +87,3 @@ public class ReelAnimation : MonoBehaviour
 		}
 	}
 }
-

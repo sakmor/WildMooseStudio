@@ -25,9 +25,9 @@ public class ReelView : MonoBehaviour
 		animation.StartSpin(targetSymbols);
 	}
 
-	public void StopSpin(List<SlotConfig.SymbolData> targetSymbols)
+	public void StopSpin()
 	{
-		animation.StopSpin(targetSymbols);
+		animation.StopSpin();
 	}
 
 	public void PlayWinAnimation()
