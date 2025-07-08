@@ -7,6 +7,7 @@ public class SlotConfig : ScriptableObject
 	[Serializable]
 	public struct SymbolData
 	{
+		public string name;
 		public Sprite sprite; // 符號圖案
 		public float probability; // 出現機率
 		public float payout; // 賠率

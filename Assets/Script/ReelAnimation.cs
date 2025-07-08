@@ -39,6 +39,9 @@ public class ReelAnimation : MonoBehaviour
 	{
 		if (isSpinning) return;
 		isSpinning = true;
+
+		//FIXME:
+		targetSymbols.ForEach(symbol => Debug.Log(symbol.name));
 		StartCoroutine(SpinAnimation(targetSymbols));
 	}
 
@@ -58,11 +61,15 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
+		symbolImages.ForEach(symbol => symbol.color = Color.red);
 		// 初始滾動階段（單輪，緩加速）
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, beginAccelerationCurve));
 		// 快速滾動階段（多輪，緩減速）
+		symbolImages.ForEach(symbol => symbol.color = Color.white);
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
 		// 最終符號顯示與對齊階段（單輪）
+		symbolImages.ForEach(symbol => symbol.color = Color.green);
+		Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, finalDecelerationCurve));
 		isSpinning = false;
 	}
@@ -88,6 +95,7 @@ public class ReelAnimation : MonoBehaviour
 					if (isFinalPhase && symbolsSetCount < symbolImages.Count)
 					{
 						// 最終階段設置目標符號
+						Debug.Log("isFinalPhase Set"+targetSymbols[i].name);
 						symbolImages[i].sprite = targetSymbols[i].sprite;
 						symbolsSetCount++;
 					}
@@ -105,6 +113,7 @@ public class ReelAnimation : MonoBehaviour
 		// 最終階段的精確對齊
 		if (isFinalPhase)
 		{
+			symbolImages.ForEach(symbol => symbol.color = Color.purple);
 			float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
 			for (int i = 0; i < symbolImages.Count; i++)
 			{

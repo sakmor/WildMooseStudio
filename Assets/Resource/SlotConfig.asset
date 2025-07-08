@@ -15,25 +15,31 @@ MonoBehaviour:
   reelCount: 1
   symbolsPerReel: 3
   symbols:
-  - sprite: {fileID: 21300000, guid: 150cbf260fa89aa43a2c6bb713eadd45, type: 3}
+  - name: "\u79AE\u7269"
+    sprite: {fileID: 21300000, guid: 150cbf260fa89aa43a2c6bb713eadd45, type: 3}
     probability: 0.02
     payout: 5
-  - sprite: {fileID: 21300000, guid: 2d73f9de53dddf3458915b93d7b249b1, type: 3}
+  - name: "\u8C6C"
+    sprite: {fileID: 21300000, guid: 2d73f9de53dddf3458915b93d7b249b1, type: 3}
     probability: 0.05
     payout: 2
-  - sprite: {fileID: 21300000, guid: f58261dc8b992db4396660c98b244f72, type: 3}
+  - name: "\u947D\u77F3"
+    sprite: {fileID: 21300000, guid: f58261dc8b992db4396660c98b244f72, type: 3}
     probability: 0.08
     payout: 0.8
-  - sprite: {fileID: 21300000, guid: 38f9769704e6ec140aace6308d430960, type: 3}
+  - name: "\u4E00\u5927\u5806\u9322"
+    sprite: {fileID: 21300000, guid: 38f9769704e6ec140aace6308d430960, type: 3}
     probability: 0.15
     payout: 0.5
-  - sprite: {fileID: 21300000, guid: 24716ed36dbfef64fafeed3df5ee17b3, type: 3}
+  - name: "\u4E09\u5806\u9322"
+    sprite: {fileID: 21300000, guid: 24716ed36dbfef64fafeed3df5ee17b3, type: 3}
     probability: 0.3
     payout: 0.2
-  - sprite: {fileID: 21300000, guid: 590b91bd2d8d2e44886a43227cb47ead, type: 3}
+  - name: "\u4E09\u584A\u9322"
+    sprite: {fileID: 21300000, guid: 590b91bd2d8d2e44886a43227cb47ead, type: 3}
     probability: 0.4
     payout: 0.1
   reelSpacing: 300
   symbolHeight: 300
   spinDuration: 3
-  spinSpeed: 1000
+  spinCycles: 2
