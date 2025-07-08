@@ -42,9 +42,6 @@ public class ReelAnimation : MonoBehaviour
 	{
 		if (isSpinning) return;
 		isSpinning = true;
-
-		//FIXME:
-		targetSymbols.ForEach(symbol => Debug.Log(symbol.name));
 		StartCoroutine(SpinAnimation(targetSymbols));
 	}
 
@@ -66,17 +63,12 @@ public class ReelAnimation : MonoBehaviour
 	{
 
 		// 初始滾動階段（單輪，緩加速）
-		symbolImages.ForEach(symbol => symbol.color = Color.red);
-		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, beginAccelerationCurve));
 
 		// 快速滾動階段（多輪，緩減速）
-		symbolImages.ForEach(symbol => symbol.color = Color.white);
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
 
 		// 最終符號顯示與對齊階段（單輪）
-		symbolImages.ForEach(symbol => symbol.color = Color.green);
-		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, finalDecelerationCurve));
 
 		isSpinning = false;
@@ -101,21 +93,19 @@ public class ReelAnimation : MonoBehaviour
 				{
 					topestSymbolImagesIndex = i;
 					rect.anchoredPosition += new Vector2(0, fullCycleDistance);
-					symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
-					if (isFinalPhase)
+
+					// 修改部分：統一符號設置邏輯
+					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
-						Debug.Log(topestSymbolImagesIndex + "," + targetSymbols[symbolsSetCount].name);
-						symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[targetSymbols.Count - symbolsSetCount-1].sprite;
+						symbolImages[i].sprite = targetSymbols[targetSymbols.Count - 1 - symbolsSetCount].sprite;
 						symbolsSetCount++;
 					}
+					else
+					{
+						symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
+					}
+					// 修改結束
 				}
-			}
-
-			if (isFinalPhase && symbolsSetCount == 0)
-			{
-				Debug.Log(topestSymbolImagesIndex + "," + targetSymbols[targetSymbols.Count-symbolsSetCount-1].name);
-				symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[targetSymbols.Count - symbolsSetCount-1].sprite;
-				symbolsSetCount++;
 			}
 
 			elapsed += Time.deltaTime;
@@ -125,15 +115,12 @@ public class ReelAnimation : MonoBehaviour
 		// 最終階段的精確對齊
 		if (isFinalPhase)
 		{
-			symbolImages.ForEach(symbol => symbol.color = Color.purple);
 			float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
-				// symbolImages[i].sprite = targetSymbols[i].sprite;
 				symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * config.symbolHeight);
 			}
 		}
-
 	}
 
 	private IEnumerator WinAnimation()
