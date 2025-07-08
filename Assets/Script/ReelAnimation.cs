@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +12,7 @@ public class ReelAnimation : MonoBehaviour
 	private float totalHeight;
 	private float fullCycleDistance;
 	private float spinSpeed;
-
+	private int topestSymbolImagesIndex = 0;
 	[SerializeField] private AnimationCurve beginAccelerationCurve = AnimationCurve.Linear(0, 0, 1, 1); // 緩加速曲線
 	[SerializeField] private AnimationCurve finalDecelerationCurve = AnimationCurve.Linear(0, 1, 1, 0); // 緩減速曲線
 
@@ -22,6 +23,8 @@ public class ReelAnimation : MonoBehaviour
 		this.config = config;
 		this.symbolImages = symbolImages;
 		CalculateSpinParameters();
+
+
 	}
 
 	private void CalculateSpinParameters()
@@ -61,23 +64,28 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
-		symbolImages.ForEach(symbol => symbol.color = Color.red);
+
 		// 初始滾動階段（單輪，緩加速）
+		symbolImages.ForEach(symbol => symbol.color = Color.red);
+		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, beginAccelerationCurve));
+
 		// 快速滾動階段（多輪，緩減速）
 		symbolImages.ForEach(symbol => symbol.color = Color.white);
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
+
 		// 最終符號顯示與對齊階段（單輪）
 		symbolImages.ForEach(symbol => symbol.color = Color.green);
-		Debug.Break();
+		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, finalDecelerationCurve));
+
 		isSpinning = false;
 	}
 
 	private IEnumerator UpdateSymbolPositions(float duration, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
 	{
 		float elapsed = 0;
-		int symbolsSetCount = 0; // 追蹤已設置的符號數量
+		int symbolsSetCount = 0;
 
 		while (elapsed < duration)
 		{
@@ -91,21 +99,25 @@ public class ReelAnimation : MonoBehaviour
 
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
+					topestSymbolImagesIndex = i;
 					rect.anchoredPosition += new Vector2(0, fullCycleDistance);
-					if (isFinalPhase && symbolsSetCount < symbolImages.Count)
+					symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
+					if (isFinalPhase)
 					{
-						// 最終階段設置目標符號
-						Debug.Log("isFinalPhase Set"+targetSymbols[i].name);
-						symbolImages[i].sprite = targetSymbols[i].sprite;
+						Debug.Log(topestSymbolImagesIndex + "," + targetSymbols[symbolsSetCount].name);
+						symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[targetSymbols.Count - symbolsSetCount-1].sprite;
 						symbolsSetCount++;
-					}
-					else
-					{
-						// 隨機符號
-						symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
 					}
 				}
 			}
+
+			if (isFinalPhase && symbolsSetCount == 0)
+			{
+				Debug.Log(topestSymbolImagesIndex + "," + targetSymbols[targetSymbols.Count-symbolsSetCount-1].name);
+				symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[targetSymbols.Count - symbolsSetCount-1].sprite;
+				symbolsSetCount++;
+			}
+
 			elapsed += Time.deltaTime;
 			yield return null;
 		}
@@ -117,7 +129,7 @@ public class ReelAnimation : MonoBehaviour
 			float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
-				symbolImages[i].sprite = targetSymbols[i].sprite;
+				// symbolImages[i].sprite = targetSymbols[i].sprite;
 				symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * config.symbolHeight);
 			}
 		}
