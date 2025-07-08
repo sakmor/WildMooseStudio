@@ -13,8 +13,7 @@ public class ReelAnimation : MonoBehaviour
 	private float fullCycleDistance;
 	private float spinSpeed;
 	private int topestSymbolImagesIndex = 0;
-	[SerializeField] private AnimationCurve beginAccelerationCurve = AnimationCurve.Linear(0, 0, 1, 1); // 緩加速曲線
-	[SerializeField] private AnimationCurve finalDecelerationCurve = AnimationCurve.Linear(0, 1, 1, 0); // 緩減速曲線
+
 
 	#region 初始化
 
@@ -63,13 +62,13 @@ public class ReelAnimation : MonoBehaviour
 	{
 
 		// 初始滾動階段（單輪，緩加速）
-		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, beginAccelerationCurve));
+		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, config.beginAccelerationCurve));
 
 		// 快速滾動階段（多輪，緩減速）
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
 
 		// 最終符號顯示與對齊階段（單輪）
-		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, finalDecelerationCurve));
+		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
 		isSpinning = false;
 	}

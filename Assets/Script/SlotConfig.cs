@@ -19,4 +19,6 @@ public class SlotConfig : ScriptableObject
 	public float symbolHeight = 100f;
 	public float spinDuration = 2f;
 	public int spinCycles = 5;
+	public AnimationCurve beginAccelerationCurve = AnimationCurve.Linear(0, 0, 1, 1); // 緩加速曲線
+	public AnimationCurve finalDecelerationCurve = AnimationCurve.Linear(0, 1, 1, 0); // 緩減速曲線
 }
