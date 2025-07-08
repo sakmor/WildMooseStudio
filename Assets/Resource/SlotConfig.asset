@@ -41,5 +41,5 @@ MonoBehaviour:
     payout: 0.1
   reelSpacing: 300
   symbolHeight: 300
-  spinDuration: 3
+  spinDuration: 1
   spinCycles: 2
