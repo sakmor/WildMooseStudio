@@ -67,7 +67,7 @@ public class ReelAnimation : MonoBehaviour
 
 		// 快速滾動階段（多輪，緩減速）
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
-
+		
 		// 最終符號顯示與對齊階段（單輪）
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
@@ -85,6 +85,7 @@ public class ReelAnimation : MonoBehaviour
 		{
 			targetSymbols.Reverse();
 			symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[symbolsSetCount].sprite;
+			Debug.Log(symbolsSetCount+","+ targetSymbols[symbolsSetCount].name);
 			symbolsSetCount++;
 		}
 
@@ -108,6 +109,7 @@ public class ReelAnimation : MonoBehaviour
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
 						symbolImages[i].sprite = targetSymbols[symbolsSetCount].sprite;
+						Debug.Log(symbolsSetCount + "," + targetSymbols[symbolsSetCount].name);
 						symbolsSetCount++;
 					}
 					else
