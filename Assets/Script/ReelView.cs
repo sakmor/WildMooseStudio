@@ -9,7 +9,7 @@ public class ReelView : MonoBehaviour
 
 	public void Initialize(SlotConfig config, GameObject symbolPrefab)
 	{
-		float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
+		float startY = (config.symbolsPerReel - 1) * config.symbolHeight;
 		for (int i = 0; i < config.symbolsPerReel; i++)
 		{
 			GameObject symbolObj = Instantiate(symbolPrefab, transform);

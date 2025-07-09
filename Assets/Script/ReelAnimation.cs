@@ -42,6 +42,7 @@ public class ReelAnimation : MonoBehaviour
 		if (isSpinning) return;
 		isSpinning = true;
 		StartCoroutine(SpinAnimation(targetSymbols));
+		targetSymbols.ForEach(e => Debug.Log(e.name));
 	}
 
 	public void StopSpin()
@@ -77,6 +78,15 @@ public class ReelAnimation : MonoBehaviour
 	{
 		float elapsed = 0;
 		int symbolsSetCount = 0;
+	
+
+		// 設置targetSymbol -1
+		if (isFinalPhase)
+		{
+			targetSymbols.Reverse();
+			symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[symbolsSetCount].sprite;
+			symbolsSetCount++;
+		}
 
 		while (elapsed < duration)
 		{
@@ -93,10 +103,10 @@ public class ReelAnimation : MonoBehaviour
 					topestSymbolImagesIndex = i;
 					rect.anchoredPosition += new Vector2(0, fullCycleDistance);
 
-					// 修改部分：統一符號設置邏輯
+					// 設置targetSymbol -2
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
-						symbolImages[i].sprite = targetSymbols[targetSymbols.Count - 1 - symbolsSetCount].sprite;
+						symbolImages[i].sprite = targetSymbols[symbolsSetCount].sprite;
 						symbolsSetCount++;
 					}
 					else
@@ -109,16 +119,6 @@ public class ReelAnimation : MonoBehaviour
 
 			elapsed += Time.deltaTime;
 			yield return null;
-		}
-
-		// 最終階段的精確對齊
-		if (isFinalPhase)
-		{
-			float startY = (config.symbolsPerReel - 1) * config.symbolHeight / 2;
-			for (int i = 0; i < symbolImages.Count; i++)
-			{
-				symbolImages[i].GetComponent<RectTransform>().anchoredPosition = new Vector2(0, startY - i * config.symbolHeight);
-			}
 		}
 	}
 
