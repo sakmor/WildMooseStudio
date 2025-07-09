@@ -101,7 +101,8 @@ public class ReelAnimation : MonoBehaviour
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
 					topestSymbolImagesIndex = i;
-					rect.anchoredPosition += new Vector2(0, fullCycleDistance);
+					// rect.anchoredPosition += new Vector2(0, fullCycleDistance);
+					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + fullCycleDistance);
 
 					// 設置targetSymbol -2
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
@@ -113,10 +114,17 @@ public class ReelAnimation : MonoBehaviour
 					{
 						symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
 					}
-					// 修改結束
 				}
 			}
-
+			if (isFinalPhase)
+			{
+				for (int i = 0; i < symbolImages.Count; i++)
+				{
+					RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
+					float targetY = Mathf.Round(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
+					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
+				}
+			}
 			elapsed += Time.deltaTime;
 			yield return null;
 		}
