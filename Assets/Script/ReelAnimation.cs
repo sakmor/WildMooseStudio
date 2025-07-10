@@ -42,7 +42,10 @@ public class ReelAnimation : MonoBehaviour
 		if (isSpinning) return;
 		isSpinning = true;
 		StartCoroutine(SpinAnimation(targetSymbols));
-		targetSymbols.ForEach(e => Debug.Log(e.name));
+		string _targetSymbols = "";
+		targetSymbols.ForEach(e => _targetSymbols += "," + e.name);
+		Debug.Log("Target：" + _targetSymbols);
+
 	}
 
 	public void StopSpin()
@@ -67,7 +70,7 @@ public class ReelAnimation : MonoBehaviour
 
 		// 快速滾動階段（多輪，緩減速）
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
-		
+
 		// 最終符號顯示與對齊階段（單輪）
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
@@ -78,14 +81,15 @@ public class ReelAnimation : MonoBehaviour
 	{
 		float elapsed = 0;
 		int symbolsSetCount = 0;
-	
+		List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
+
 
 		// 設置targetSymbol -1
 		if (isFinalPhase)
 		{
 			targetSymbols.Reverse();
 			symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[symbolsSetCount].sprite;
-			Debug.Log(symbolsSetCount+","+ targetSymbols[symbolsSetCount].name);
+			resultSymbols.Add(targetSymbols[symbolsSetCount]);
 			symbolsSetCount++;
 		}
 
@@ -109,7 +113,7 @@ public class ReelAnimation : MonoBehaviour
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
 						symbolImages[i].sprite = targetSymbols[symbolsSetCount].sprite;
-						Debug.Log(symbolsSetCount + "," + targetSymbols[symbolsSetCount].name);
+						resultSymbols.Add(targetSymbols[symbolsSetCount]);
 						symbolsSetCount++;
 					}
 					else
@@ -118,17 +122,35 @@ public class ReelAnimation : MonoBehaviour
 					}
 				}
 			}
-			if (isFinalPhase)
-			{
-				for (int i = 0; i < symbolImages.Count; i++)
-				{
-					RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-					float targetY = Mathf.Round(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
-					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
-				}
-			}
+
 			elapsed += Time.deltaTime;
 			yield return null;
+		}
+
+		if (isFinalPhase)
+		{
+			for (int i = 0; i < symbolImages.Count; i++)
+			{
+				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
+				float targetY = Mathf.Round(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
+				rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
+			}
+
+			// 比較 resultSymbols 和 targetSymbols 是否一致
+			bool isMatch = resultSymbols != null && targetSymbols != null && resultSymbols.SequenceEqual(targetSymbols);
+
+			// 使用 string.Join 優化字串拼接
+			string resultSymbolNames = string.Join(",", resultSymbols.Select(e => e.name));
+			string targetSymbolNames = string.Join(",", targetSymbols.Select(e => e.name));
+
+			if (isMatch)
+			{
+				Debug.Log($"Result matches target: {resultSymbolNames}");
+			}
+			else
+			{
+				Debug.LogError($"Result does not match target! Result: {resultSymbolNames}, Target: {targetSymbolNames}");
+			}
 		}
 	}
 
