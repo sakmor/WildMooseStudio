@@ -13,12 +13,14 @@ public class SlotController : MonoBehaviour
 		model = new SlotModel(config);
 		view.Initialize(model);
 		spinButton.onClick.AddListener(OnSpinButtonClicked);
+		model.OnSpinFinished += () => spinButton.interactable = true;
 	}
 
 	public void OnSpinButtonClicked()
 	{
-		if (model.Credits >= model.Bet)
+		if (model.Credits >= model.Bet && !model.IsSpinning) 
 		{
+			spinButton.interactable = false;
 			model.Spin();
 		}
 	}

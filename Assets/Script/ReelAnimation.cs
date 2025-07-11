@@ -13,7 +13,8 @@ public class ReelAnimation : MonoBehaviour
 	private float fullCycleDistance;
 	private float spinSpeed;
 	private int topestSymbolImagesIndex = 0;
-
+	// 新增：停輪完成事件
+	public event System.Action OnSpinStopped;
 
 	#region 初始化
 
@@ -22,8 +23,6 @@ public class ReelAnimation : MonoBehaviour
 		this.config = config;
 		this.symbolImages = symbolImages;
 		CalculateSpinParameters();
-
-
 	}
 
 	private void CalculateSpinParameters()
@@ -45,12 +44,12 @@ public class ReelAnimation : MonoBehaviour
 		string _targetSymbols = "";
 		targetSymbols.ForEach(e => _targetSymbols += "," + e.name);
 		Debug.Log("Target：" + _targetSymbols);
-
 	}
 
 	public void StopSpin()
 	{
 		isSpinning = false;
+		OnSpinStopped?.Invoke();
 	}
 
 	public void PlayWinAnimation()
@@ -64,7 +63,6 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
-
 		// 初始滾動階段（單輪，緩加速）
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, config.beginAccelerationCurve));
 
@@ -75,6 +73,8 @@ public class ReelAnimation : MonoBehaviour
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
 		isSpinning = false;
+		// 新增：動畫結束後觸發停輪事件
+		OnSpinStopped?.Invoke();
 	}
 
 	private IEnumerator UpdateSymbolPositions(float duration, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
@@ -82,7 +82,6 @@ public class ReelAnimation : MonoBehaviour
 		float elapsed = 0;
 		int symbolsSetCount = 0;
 		List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
-
 
 		// 設置targetSymbol -1
 		if (isFinalPhase)
@@ -106,7 +105,6 @@ public class ReelAnimation : MonoBehaviour
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
 					topestSymbolImagesIndex = i;
-					// rect.anchoredPosition += new Vector2(0, fullCycleDistance);
 					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + fullCycleDistance);
 
 					// 設置targetSymbol -2

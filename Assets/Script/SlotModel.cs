@@ -7,6 +7,7 @@ public class SlotModel
 	public int Credits { get; private set; }
 	public int Bet { get; private set; }
 	public int WinAmount { get; private set; }
+	public bool IsSpinning { get; private set; } 
 	public event Action OnSpinStarted;
 	public event Action OnSpinFinished;
 	public event Action OnCreditsChanged;
@@ -22,6 +23,7 @@ public class SlotModel
 		Bet = 10;
 		WinAmount = 0;
 		Reels = new List<Reel>();
+		IsSpinning = false; 
 		for (int i = 0; i < config.reelCount; i++)
 		{
 			Reels.Add(new Reel(config.symbolsPerReel));
@@ -30,11 +32,18 @@ public class SlotModel
 
 	public void Spin()
 	{
+		IsSpinning = true;
 		foreach (var reel in Reels)
 		{
 			reel.SetSymbols(GenerateRandomSymbols());
 		}
 		OnSpinStarted?.Invoke();
+		
+	}
+
+	public void OnReelSpinStopped()
+	{
+		IsSpinning = false;
 		CalculateWin();
 		OnSpinFinished?.Invoke();
 	}

@@ -19,7 +19,6 @@ public class SlotView : MonoBehaviour
 	{
 		this.model = model;
 		model.OnSpinStarted += StartSpinAnimation;
-		model.OnSpinFinished += StopSpinAnimation;
 		model.OnCreditsChanged += UpdateCreditsUI;
 		model.OnWinAmountChanged += UpdateWinUI;
 		model.OnWinDetected += PlayWinAnimation;
@@ -40,6 +39,8 @@ public class SlotView : MonoBehaviour
 			reelObj.transform.SetParent(reelContainer, false);
 			ReelView reelView = reelObj.AddComponent<ReelView>();
 			reelView.Initialize(config, symbolPrefab);
+			int index=i;
+			reelView.GetComponent<ReelAnimation>().OnSpinStopped += () => OnReelSpinStopped(index);
 			reelViews.Add(reelView);
 			reelObj.GetComponent<RectTransform>().anchoredPosition = new Vector2(startX + i * config.reelSpacing, 0);
 		}
@@ -53,11 +54,13 @@ public class SlotView : MonoBehaviour
 		}
 	}
 
-	private void StopSpinAnimation()
+
+
+	private void OnReelSpinStopped(int reelIndex)
 	{
-		for (int i = 0; i < reelViews.Count; i++)
+		if (reelIndex == reelViews.Count - 1) 
 		{
-			reelViews[i].StopSpin();
+			model.OnReelSpinStopped();
 		}
 	}
 
