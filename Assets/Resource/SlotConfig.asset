@@ -39,6 +39,7 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 590b91bd2d8d2e44886a43227cb47ead, type: 3}
     probability: 0.4
     payout: 0.1
+  paylineJsonFiles: []
   reelSpacing: 300
   symbolHeight: 300
   spinDuration: 1

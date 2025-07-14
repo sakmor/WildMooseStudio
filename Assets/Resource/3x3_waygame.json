@@ -1,0 +1,193 @@
+{
+	"paylines": [
+		{
+			"symbolIndices": [
+				0,
+				0,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				0,
+				1
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				0,
+				2
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				1,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				1,
+				1
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				1,
+				2
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				2,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				2,
+				1
+			]
+		},
+		{
+			"symbolIndices": [
+				0,
+				2,
+				2
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				0,
+				1
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				0,
+				2
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				1,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				1,
+				1
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				1,
+				2
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				2,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				2,
+				1
+			]
+		},
+		{
+			"symbolIndices": [
+				1,
+				2,
+				2
+			]
+		},
+		{
+			"symbolIndices": [
+				2,
+				0,
+				0
+			]
+		},
+		{
+			"symbolIndices": [
+				2,
+				0,
+				1
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				0,
+				2
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				1,
+				0
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				1,
+				1
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				1,
+				2
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				2,
+				0
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				2,
+				1
+			] 
+		},
+		{
+			"symbolIndices": [
+				2,
+				2,
+				2
+			] 
+		}
+	]
+}
