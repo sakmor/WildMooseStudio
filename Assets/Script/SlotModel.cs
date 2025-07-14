@@ -12,7 +12,7 @@ public class SlotModel
 	public event Action OnSpinFinished;
 	public event Action OnCreditsChanged;
 	public event Action OnWinAmountChanged;
-	public event Action<int> OnWinDetected;
+	public event Action<int> OnWinDetected; // 修改：傳遞 payline 索引
 
 	private readonly SlotConfig config;
 	private readonly WinEvaluator winEvaluator;
@@ -62,20 +62,20 @@ public class SlotModel
 	private void CalculateWin()
 	{
 		int winAmount = 0;
-		List<int> winningReels;
+		List<int> winningPaylineIndices;
 
-		// 修改：調用 WinEvaluator 計算贏得金額和獲勝滾輪
-		winEvaluator.CalculateWin(Reels, Bet, out winAmount, out winningReels);
+		// 修改：接收獲勝的 payline 索引
+		winEvaluator.CalculateWin(Reels, Bet, out winAmount, out winningPaylineIndices);
 
 		WinAmount = winAmount;
 		Credits += WinAmount - Bet;
 		OnCreditsChanged?.Invoke();
 		OnWinAmountChanged?.Invoke();
 
-		// 修改：僅對獲勝的滾輪觸發 OnWinDetected 事件
-		foreach (int reelIndex in winningReels)
+		// 修改：對每個獲勝的 payline 觸發事件
+		foreach (int paylineIndex in winningPaylineIndices)
 		{
-			OnWinDetected?.Invoke(reelIndex);
+			OnWinDetected?.Invoke(paylineIndex);
 		}
 	}
 }

@@ -30,9 +30,9 @@ public class ReelView : MonoBehaviour
 		animation.StopSpin();
 	}
 
-	public void PlayWinAnimation()
+	public void PlayWinAnimation(List<int> symbolIndices)
 	{
-		animation.PlayWinAnimation();
+		// 修改：傳遞多個符號索引
+		animation.PlayWinAnimation(symbolIndices);
 	}
 }
-

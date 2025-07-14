@@ -13,8 +13,8 @@ public class ReelAnimation : MonoBehaviour
 	private float fullCycleDistance;
 	private float spinSpeed;
 	private int topestSymbolImagesIndex = 0;
-	// 新增：停輪完成事件
 	public event System.Action OnSpinStopped;
+	private Coroutine winAnimationCoroutine;
 
 	#region 初始化
 
@@ -40,6 +40,18 @@ public class ReelAnimation : MonoBehaviour
 	{
 		if (isSpinning) return;
 		isSpinning = true;
+
+		// 停止所有正在進行的 WinAnimation 並恢復透明度
+		if (winAnimationCoroutine != null)
+		{
+			StopCoroutine(winAnimationCoroutine);
+			winAnimationCoroutine = null;
+			foreach (var image in symbolImages)
+			{
+				image.color = new Color(image.color.r, image.color.g, image.color.b, 1f);
+			}
+		}
+
 		StartCoroutine(SpinAnimation(targetSymbols));
 		string _targetSymbols = "";
 		targetSymbols.ForEach(e => _targetSymbols += "," + e.name);
@@ -52,9 +64,14 @@ public class ReelAnimation : MonoBehaviour
 		OnSpinStopped?.Invoke();
 	}
 
-	public void PlayWinAnimation()
+	public void PlayWinAnimation(List<int> symbolIndices)
 	{
-		StartCoroutine(WinAnimation());
+		// 修改：傳遞多個符號索引
+		if (winAnimationCoroutine != null)
+		{
+			StopCoroutine(winAnimationCoroutine);
+		}
+		winAnimationCoroutine = StartCoroutine(WinAnimation(symbolIndices));
 	}
 
 	#endregion
@@ -63,17 +80,11 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
-		// 初始滾動階段（單輪，緩加速）
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, config.beginAccelerationCurve));
-
-		// 快速滾動階段（多輪，緩減速）
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
-
-		// 最終符號顯示與對齊階段（單輪）
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
 		isSpinning = false;
-		// 新增：動畫結束後觸發停輪事件
 		OnSpinStopped?.Invoke();
 	}
 
@@ -82,19 +93,17 @@ public class ReelAnimation : MonoBehaviour
 		float elapsed = 0;
 		int symbolsSetCount = 0;
 		List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
-
-		// 設置targetSymbol -1
+		List<SlotConfig.SymbolData> _targetSymbols = null;
 		if (isFinalPhase)
 		{
-			targetSymbols.Reverse();
-			symbolImages[topestSymbolImagesIndex].sprite = targetSymbols[symbolsSetCount].sprite;
-			resultSymbols.Add(targetSymbols[symbolsSetCount]);
+			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
+			symbolImages[topestSymbolImagesIndex].sprite = _targetSymbols[symbolsSetCount].sprite;
+			resultSymbols.Insert(0,_targetSymbols[symbolsSetCount]);
 			symbolsSetCount++;
 		}
 
 		while (elapsed < duration)
 		{
-			// 計算當前速度（若有速度曲線，則根據曲線調整）
 			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
 
 			for (int i = 0; i < symbolImages.Count; i++)
@@ -107,11 +116,10 @@ public class ReelAnimation : MonoBehaviour
 					topestSymbolImagesIndex = i;
 					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + fullCycleDistance);
 
-					// 設置targetSymbol -2
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
-						symbolImages[i].sprite = targetSymbols[symbolsSetCount].sprite;
-						resultSymbols.Add(targetSymbols[symbolsSetCount]);
+						symbolImages[i].sprite = _targetSymbols[symbolsSetCount].sprite;
+						resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
 						symbolsSetCount++;
 					}
 					else
@@ -134,10 +142,7 @@ public class ReelAnimation : MonoBehaviour
 				rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
 			}
 
-			// 比較 resultSymbols 和 targetSymbols 是否一致
 			bool isMatch = resultSymbols != null && targetSymbols != null && resultSymbols.SequenceEqual(targetSymbols);
-
-			// 使用 string.Join 優化字串拼接
 			string resultSymbolNames = string.Join(",", resultSymbols.Select(e => e.name));
 			string targetSymbolNames = string.Join(",", targetSymbols.Select(e => e.name));
 
@@ -152,19 +157,53 @@ public class ReelAnimation : MonoBehaviour
 		}
 	}
 
-	private IEnumerator WinAnimation()
+	private IEnumerator WinAnimation(List<int> symbolIndices)
 	{
-		for (int i = 0; i < 6; i++)
+		// 修改：交替顯示每組符號的淡入淡出動畫
+		if (symbolIndices == null || symbolIndices.Count == 0)
 		{
-			foreach (var image in symbolImages)
-			{
-				image.enabled = !image.enabled;
-			}
-			yield return new WaitForSeconds(0.2f);
+			yield break;
 		}
+
+		// 恢復所有符號的透明度
 		foreach (var image in symbolImages)
 		{
-			image.enabled = true;
+			image.color = new Color(image.color.r, image.color.g, image.color.b, 1f);
+		}
+
+		while (true)
+		{
+			// 對每個符號索引執行淡入淡出
+			foreach (int symbolIndex in symbolIndices)
+			{
+				if (symbolIndex >= 0 && symbolIndex < symbolImages.Count)
+				{
+					Image targetImage = symbolImages[symbolIndex];
+					Color originalColor = targetImage.color;
+					float duration = 0.2f;
+
+					// 淡出
+					float elapsed = 0f;
+					while (elapsed < duration)
+					{
+						elapsed += Time.deltaTime;
+						targetImage.color = new Color(originalColor.r, originalColor.g, originalColor.b, 1f - elapsed / duration);
+						yield return null;
+					}
+
+					// 淡入
+					elapsed = 0f;
+					while (elapsed < duration)
+					{
+						elapsed += Time.deltaTime;
+						targetImage.color = new Color(originalColor.r, originalColor.g, originalColor.b, elapsed / duration);
+						yield return null;
+					}
+
+					// 等待一小段時間以區分不同 payline 的動畫
+					yield return new WaitForSeconds(0.1f);
+				}
+			}
 		}
 	}
 
