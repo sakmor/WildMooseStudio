@@ -87,15 +87,16 @@ public class ReelAnimation : MonoBehaviour
 		isSpinning = false;
 		OnSpinStopped?.Invoke();
 	}
-
+	public List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
 	private IEnumerator UpdateSymbolPositions(float duration, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
 	{
 		float elapsed = 0;
 		int symbolsSetCount = 0;
-		List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
+	
 		List<SlotConfig.SymbolData> _targetSymbols = null;
 		if (isFinalPhase)
 		{
+			resultSymbols.Clear();
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
 			symbolImages[topestSymbolImagesIndex].sprite = _targetSymbols[symbolsSetCount].sprite;
 			resultSymbols.Insert(0,_targetSymbols[symbolsSetCount]);
@@ -138,7 +139,7 @@ public class ReelAnimation : MonoBehaviour
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-				float targetY = Mathf.Round(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
+				float targetY = Mathf.Ceil(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
 				rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
 			}
 
