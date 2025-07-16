@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31b44e9e16f0c6e40a474b24c00b7dca, type: 3}
+  m_Name: SlotGameConfig
+  m_EditorClassIdentifier: 
+  reelCount: 3
+  symbolsPerReel: 3
+  symbols:
+  - name: "\u79AE\u7269"
+    sprite: {fileID: 21300000, guid: 150cbf260fa89aa43a2c6bb713eadd45, type: 3}
+    probability: 0.02
+    payout: 5
+  - name: "\u8C6C"
+    sprite: {fileID: 21300000, guid: 2d73f9de53dddf3458915b93d7b249b1, type: 3}
+    probability: 0.05
+    payout: 2
+  - name: "\u947D\u77F3"
+    sprite: {fileID: 21300000, guid: f58261dc8b992db4396660c98b244f72, type: 3}
+    probability: 0.08
+    payout: 0.8
+  - name: "\u4E00\u5927\u5806\u9322"
+    sprite: {fileID: 21300000, guid: 38f9769704e6ec140aace6308d430960, type: 3}
+    probability: 0.15
+    payout: 0.5
+  - name: "\u4E09\u5806\u9322"
+    sprite: {fileID: 21300000, guid: 24716ed36dbfef64fafeed3df5ee17b3, type: 3}
+    probability: 0.3
+    payout: 0.2
+  - name: "\u4E09\u584A\u9322"
+    sprite: {fileID: 21300000, guid: 590b91bd2d8d2e44886a43227cb47ead, type: 3}
+    probability: 0.4
+    payout: 0.1
+  paylineJsonFile: {fileID: 4900000, guid: 3dae13fc64d3c2a42943bb89444b87de, type: 3}
+  reelSpacing: 300
+  symbolHeight: 300
+  spinDuration: 1
+  spinCycles: 1
+  beginAccelerationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  finalDecelerationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: -1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
