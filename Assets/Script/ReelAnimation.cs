@@ -13,10 +13,11 @@ public class ReelAnimation : MonoBehaviour
 	private float fullCycleDistance;
 	private float spinSpeed;
 	private int topestSymbolImagesIndex = 0;
+	private List<SlotConfig.SymbolData> targetSymbols; // 緩存 targetSymbols
 	public event System.Action OnSpinStopped;
 	private Coroutine winAnimationCoroutine;
 
-	private const float MinDeltaMove = 0.01f; // 🚨 每次至少移動這麼多距離
+	private const float MinDeltaMove = 0.01f; // 每次至少移動這麼多距離
 
 	#region 初始化
 
@@ -38,10 +39,11 @@ public class ReelAnimation : MonoBehaviour
 
 	#region 公開方法
 
-	public void StartSpin(List<SlotConfig.SymbolData> targetSymbols)
+	public void StartSpin(List<SlotConfig.SymbolData> symbols)
 	{
 		if (isSpinning) return;
 		isSpinning = true;
+		targetSymbols = symbols; // 緩存 targetSymbols
 
 		if (winAnimationCoroutine != null)
 		{
@@ -53,7 +55,7 @@ public class ReelAnimation : MonoBehaviour
 			}
 		}
 
-		StartCoroutine(SpinAnimation(targetSymbols));
+		StartCoroutine(SpinAnimation());
 		string _targetSymbols = string.Join(",", targetSymbols.Select(e => e.name));
 		Debug.Log("Target：" + _targetSymbols);
 	}
@@ -77,15 +79,15 @@ public class ReelAnimation : MonoBehaviour
 
 	#region 動畫邏輯
 
-	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
+	private IEnumerator SpinAnimation()
 	{
 		float beginAccelDistance = fullCycleDistance;
 		float constantDistance = spinSpeed * config.spinDuration;
 		float finalDecelDistance = fullCycleDistance;
 
-		yield return StartCoroutine(UpdateSymbolPositionsByDistance(beginAccelDistance, false, null, config.beginAccelerationCurve));
-		yield return StartCoroutine(UpdateSymbolPositionsByDistance(constantDistance, false, null, null));
-		yield return StartCoroutine(UpdateSymbolPositionsByDistance(finalDecelDistance, true, targetSymbols, config.finalDecelerationCurve));
+		yield return StartCoroutine(UpdateSymbolPositionsByDistance(beginAccelDistance, false, config.beginAccelerationCurve));
+		yield return StartCoroutine(UpdateSymbolPositionsByDistance(constantDistance, false, null));
+		yield return StartCoroutine(UpdateSymbolPositionsByDistance(finalDecelDistance, true, config.finalDecelerationCurve));
 
 		isSpinning = false;
 		OnSpinStopped?.Invoke();
@@ -93,7 +95,7 @@ public class ReelAnimation : MonoBehaviour
 
 	public List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
 
-	private IEnumerator UpdateSymbolPositionsByDistance(float targetDistance, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
+	private IEnumerator UpdateSymbolPositionsByDistance(float targetDistance, bool isFinalPhase, AnimationCurve speedCurve = null)
 	{
 		float totalMovedDistance = 0f;
 		int symbolsSetCount = 0;
@@ -103,16 +105,13 @@ public class ReelAnimation : MonoBehaviour
 		{
 			resultSymbols.Clear();
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
-			symbolImages[topestSymbolImagesIndex].sprite = _targetSymbols[symbolsSetCount].sprite;
-			resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
-			symbolsSetCount++;
 		}
 
 		while (totalMovedDistance < targetDistance)
 		{
 			float progress = totalMovedDistance / targetDistance;
 			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(progress) : spinSpeed;
-			float deltaMove = Mathf.Max(currentSpeed * Time.deltaTime, MinDeltaMove); // ⬅️ 加上最小值保護
+			float deltaMove = Mathf.Max(currentSpeed * Time.deltaTime, MinDeltaMove);
 
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
