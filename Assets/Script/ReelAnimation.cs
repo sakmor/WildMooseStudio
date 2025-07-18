@@ -12,7 +12,6 @@ public class ReelAnimation : MonoBehaviour
 	private float totalHeight;
 	private float fullCycleDistance;
 	private float spinSpeed;
-	private int topestSymbolImagesIndex = 0;
 	private List<SlotConfig.SymbolData> targetSymbols; // 緩存 targetSymbols
 	public event System.Action OnSpinStopped;
 	private Coroutine winAnimationCoroutine;
@@ -93,7 +92,6 @@ public class ReelAnimation : MonoBehaviour
 		OnSpinStopped?.Invoke();
 	}
 
-	public List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
 
 	private IEnumerator UpdateSymbolPositionsByDistance(float targetDistance, bool isFinalPhase, AnimationCurve speedCurve = null)
 	{
@@ -103,7 +101,6 @@ public class ReelAnimation : MonoBehaviour
 		List<SlotConfig.SymbolData> _targetSymbols = null;
 		if (isFinalPhase)
 		{
-			resultSymbols.Clear();
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
 		}
 
@@ -120,13 +117,11 @@ public class ReelAnimation : MonoBehaviour
 
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
-					topestSymbolImagesIndex = i;
 					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + fullCycleDistance);
 
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
 						symbolImages[i].sprite = _targetSymbols[symbolsSetCount].sprite;
-						resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
 						symbolsSetCount++;
 					}
 					else
@@ -140,28 +135,17 @@ public class ReelAnimation : MonoBehaviour
 			yield return null;
 		}
 
-		if (isFinalPhase)
-		{
+		if(isFinalPhase)SnapSymbolsToGridAndCheck();
+	}
+
+	private void SnapSymbolsToGridAndCheck()
+	{
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
 				float targetY = Mathf.Ceil(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
 				rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
-			}
-
-			bool isMatch = resultSymbols != null && targetSymbols != null && resultSymbols.SequenceEqual(targetSymbols);
-			string resultSymbolNames = string.Join(",", resultSymbols.Select(e => e.name));
-			string targetSymbolNames = string.Join(",", targetSymbols.Select(e => e.name));
-
-			if (isMatch)
-			{
-				Debug.Log($"Result matches target: {resultSymbolNames}");
-			}
-			else
-			{
-				Debug.LogError($"Result does not match target! Result: {resultSymbolNames}, Target: {targetSymbolNames}");
-			}
-		}
+			}		
 	}
 
 	private IEnumerator WinAnimation(List<int> symbolIndices)
