@@ -16,6 +16,8 @@ public class ReelAnimation : MonoBehaviour
 	public event System.Action OnSpinStopped;
 	private Coroutine winAnimationCoroutine;
 
+	private const float MinDeltaMove = 0.01f; // 🚨 每次至少移動這麼多距離
+
 	#region 初始化
 
 	public void Initialize(SlotConfig config, List<Image> symbolImages)
@@ -77,7 +79,6 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
-		// 各階段定義目標距離（非時間）
 		float beginAccelDistance = fullCycleDistance;
 		float constantDistance = spinSpeed * config.spinDuration;
 		float finalDecelDistance = fullCycleDistance;
@@ -111,7 +112,7 @@ public class ReelAnimation : MonoBehaviour
 		{
 			float progress = totalMovedDistance / targetDistance;
 			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(progress) : spinSpeed;
-			float deltaMove = currentSpeed * Time.deltaTime;
+			float deltaMove = Mathf.Max(currentSpeed * Time.deltaTime, MinDeltaMove); // ⬅️ 加上最小值保護
 
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
@@ -140,7 +141,6 @@ public class ReelAnimation : MonoBehaviour
 			yield return null;
 		}
 
-		// 最後位置補正
 		if (isFinalPhase)
 		{
 			for (int i = 0; i < symbolImages.Count; i++)
