@@ -39,29 +39,29 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 590b91bd2d8d2e44886a43227cb47ead, type: 3}
     probability: 0.4
     payout: 0.1
-  paylineJsonFile: {fileID: 4900000, guid: 3dae13fc64d3c2a42943bb89444b87de, type: 3}
+  paylineJsonFile: {fileID: 4900000, guid: 398290adc44d3fe41a10ad0d53801523, type: 3}
   reelSpacing: 300
   symbolHeight: 300
-  spinDuration: 1
+  spinDuration: 0.125
   spinCycles: 1
   beginAccelerationCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0

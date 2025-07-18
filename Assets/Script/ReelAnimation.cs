@@ -41,7 +41,6 @@ public class ReelAnimation : MonoBehaviour
 		if (isSpinning) return;
 		isSpinning = true;
 
-		// 停止所有正在進行的 WinAnimation 並恢復透明度
 		if (winAnimationCoroutine != null)
 		{
 			StopCoroutine(winAnimationCoroutine);
@@ -53,8 +52,7 @@ public class ReelAnimation : MonoBehaviour
 		}
 
 		StartCoroutine(SpinAnimation(targetSymbols));
-		string _targetSymbols = "";
-		targetSymbols.ForEach(e => _targetSymbols += "," + e.name);
+		string _targetSymbols = string.Join(",", targetSymbols.Select(e => e.name));
 		Debug.Log("Target：" + _targetSymbols);
 	}
 
@@ -66,7 +64,6 @@ public class ReelAnimation : MonoBehaviour
 
 	public void PlayWinAnimation(List<int> symbolIndices)
 	{
-		// 修改：傳遞多個符號索引
 		if (winAnimationCoroutine != null)
 		{
 			StopCoroutine(winAnimationCoroutine);
@@ -80,37 +77,46 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
-		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, config.beginAccelerationCurve));
-		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
-		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
+		// 各階段定義目標距離（非時間）
+		float beginAccelDistance = fullCycleDistance;
+		float constantDistance = spinSpeed * config.spinDuration;
+		float finalDecelDistance = fullCycleDistance;
+
+		yield return StartCoroutine(UpdateSymbolPositionsByDistance(beginAccelDistance, false, null, config.beginAccelerationCurve));
+		yield return StartCoroutine(UpdateSymbolPositionsByDistance(constantDistance, false, null, null));
+		yield return StartCoroutine(UpdateSymbolPositionsByDistance(finalDecelDistance, true, targetSymbols, config.finalDecelerationCurve));
 
 		isSpinning = false;
 		OnSpinStopped?.Invoke();
 	}
+
 	public List<SlotConfig.SymbolData> resultSymbols = new List<SlotConfig.SymbolData>();
-	private IEnumerator UpdateSymbolPositions(float duration, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
+
+	private IEnumerator UpdateSymbolPositionsByDistance(float targetDistance, bool isFinalPhase, List<SlotConfig.SymbolData> targetSymbols, AnimationCurve speedCurve = null)
 	{
-		float elapsed = 0;
+		float totalMovedDistance = 0f;
 		int symbolsSetCount = 0;
-	
+
 		List<SlotConfig.SymbolData> _targetSymbols = null;
 		if (isFinalPhase)
 		{
 			resultSymbols.Clear();
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
 			symbolImages[topestSymbolImagesIndex].sprite = _targetSymbols[symbolsSetCount].sprite;
-			resultSymbols.Insert(0,_targetSymbols[symbolsSetCount]);
+			resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
 			symbolsSetCount++;
 		}
 
-		while (elapsed < duration)
+		while (totalMovedDistance < targetDistance)
 		{
-			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
+			float progress = totalMovedDistance / targetDistance;
+			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(progress) : spinSpeed;
+			float deltaMove = currentSpeed * Time.deltaTime;
 
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * currentSpeed);
+				rect.anchoredPosition += new Vector2(0, -deltaMove);
 
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
@@ -130,10 +136,11 @@ public class ReelAnimation : MonoBehaviour
 				}
 			}
 
-			elapsed += Time.deltaTime;
+			totalMovedDistance += deltaMove;
 			yield return null;
 		}
 
+		// 最後位置補正
 		if (isFinalPhase)
 		{
 			for (int i = 0; i < symbolImages.Count; i++)
@@ -160,13 +167,9 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator WinAnimation(List<int> symbolIndices)
 	{
-		// 修改：交替顯示每組符號的淡入淡出動畫
 		if (symbolIndices == null || symbolIndices.Count == 0)
-		{
 			yield break;
-		}
 
-		// 恢復所有符號的透明度
 		foreach (var image in symbolImages)
 		{
 			image.color = new Color(image.color.r, image.color.g, image.color.b, 1f);
@@ -174,7 +177,6 @@ public class ReelAnimation : MonoBehaviour
 
 		while (true)
 		{
-			// 對每個符號索引執行淡入淡出
 			foreach (int symbolIndex in symbolIndices)
 			{
 				if (symbolIndex >= 0 && symbolIndex < symbolImages.Count)
@@ -183,7 +185,6 @@ public class ReelAnimation : MonoBehaviour
 					Color originalColor = targetImage.color;
 					float duration = 0.2f;
 
-					// 淡出
 					float elapsed = 0f;
 					while (elapsed < duration)
 					{
@@ -192,7 +193,6 @@ public class ReelAnimation : MonoBehaviour
 						yield return null;
 					}
 
-					// 淡入
 					elapsed = 0f;
 					while (elapsed < duration)
 					{
@@ -201,7 +201,6 @@ public class ReelAnimation : MonoBehaviour
 						yield return null;
 					}
 
-					// 等待一小段時間以區分不同 payline 的動畫
 					yield return new WaitForSeconds(0.1f);
 				}
 			}
