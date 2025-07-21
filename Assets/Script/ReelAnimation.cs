@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ public class ReelAnimation : MonoBehaviour
 	private List<SlotConfig.SymbolData> targetSymbols; // 緩存 targetSymbols
 	public event System.Action OnSpinStopped;
 	private Coroutine winAnimationCoroutine;
+	public List<float> SymbolPostions = new();
 
 	private const float MinDeltaMove = 0.01f; // 每次至少移動這麼多距離
 
@@ -24,6 +26,7 @@ public class ReelAnimation : MonoBehaviour
 	{
 		this.config = config;
 		this.symbolImages = symbolImages;
+		symbolImages.ForEach(symbol => this.SymbolPostions.Add(symbol.transform.localPosition.y));
 		CalculateSpinParameters();
 	}
 
@@ -117,7 +120,9 @@ public class ReelAnimation : MonoBehaviour
 
 				if (rect.anchoredPosition.y < -totalHeight / 2)
 				{
-					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + fullCycleDistance);
+					Vector3 pos = symbolImages[i].transform.localPosition;
+					pos.y = SymbolPostions[0];
+					symbolImages[i].transform.localPosition = pos;
 
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
@@ -135,17 +140,18 @@ public class ReelAnimation : MonoBehaviour
 			yield return null;
 		}
 
-		if(isFinalPhase)SnapSymbolsToGridAndCheck();
+		if (isFinalPhase & config.isUseFinalSnap) SnapSymbolsToGridAndCheck();
 	}
 
 	private void SnapSymbolsToGridAndCheck()
 	{
-			for (int i = 0; i < symbolImages.Count; i++)
-			{
-				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-				float targetY = Mathf.Ceil(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
-				rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
-			}		
+		for (int i = 0; i < symbolImages.Count; i++)
+		{
+			Image symbolImage = symbolImages[i];
+			Vector3 pos = symbolImage.transform.localPosition;
+			pos.y = SymbolPostions[i];
+			symbolImage.transform.localPosition = pos;
+		}
 	}
 
 	private IEnumerator WinAnimation(List<int> symbolIndices)
