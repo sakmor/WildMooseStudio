@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro.EditorUtilities;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,12 +14,12 @@ public class ReelAnimation : MonoBehaviour
 	private float totalHeight;
 	private float fullCycleDistance;
 	private float spinSpeed;
-	private List<SlotConfig.SymbolData> targetSymbols; // 緩存 targetSymbols
+	private List<SlotConfig.SymbolData> targetSymbols;
 	public event System.Action OnSpinStopped;
 	private Coroutine winAnimationCoroutine;
-	public List<float> SymbolPostions = new();
+	public List<float> SymbolBeginPostions = new();
 
-	private const float MinDeltaMove = 0.01f; // 每次至少移動這麼多距離
+	private const float MinDeltaMove = 0.01f;
 
 	#region 初始化
 
@@ -26,7 +27,7 @@ public class ReelAnimation : MonoBehaviour
 	{
 		this.config = config;
 		this.symbolImages = symbolImages;
-		symbolImages.ForEach(symbol => this.SymbolPostions.Add(symbol.transform.localPosition.y));
+		symbolImages.ForEach(symbol => this.SymbolBeginPostions.Add(symbol.transform.localPosition.y));
 		CalculateSpinParameters();
 	}
 
@@ -45,7 +46,7 @@ public class ReelAnimation : MonoBehaviour
 	{
 		if (isSpinning) return;
 		isSpinning = true;
-		targetSymbols = symbols; // 緩存 targetSymbols
+		targetSymbols = symbols;
 
 		if (winAnimationCoroutine != null)
 		{
@@ -88,17 +89,17 @@ public class ReelAnimation : MonoBehaviour
 		float finalDecelDistance = fullCycleDistance;
 
 		yield return StartCoroutine(UpdateSymbolPositionsByDistance(beginAccelDistance, false, config.beginAccelerationCurve));
-		yield return StartCoroutine(UpdateSymbolPositionsByDistance(constantDistance, false, null));
-		yield return StartCoroutine(UpdateSymbolPositionsByDistance(finalDecelDistance, true, config.finalDecelerationCurve));
+		// yield return StartCoroutine(UpdateSymbolPositionsByDistance(constantDistance, false, null));
+		// yield return StartCoroutine(UpdateSymbolPositionsByDistance(finalDecelDistance, true, config.finalDecelerationCurve));
 
 		isSpinning = false;
 		OnSpinStopped?.Invoke();
 	}
 
-
-	private IEnumerator UpdateSymbolPositionsByDistance(float targetDistance, bool isFinalPhase, AnimationCurve speedCurve = null)
+	private IEnumerator UpdateSymbolPositionsByDistance(float targetDistance, bool isFinalPhase, AnimationCurve positionCurve = null)
 	{
-		float totalMovedDistance = 0f;
+		float elapsedTime = 0f;
+		float phaseDuration = targetDistance / spinSpeed; // 計算此階段應持續的時間
 		int symbolsSetCount = 0;
 
 		List<SlotConfig.SymbolData> _targetSymbols = null;
@@ -107,36 +108,48 @@ public class ReelAnimation : MonoBehaviour
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
 		}
 
-		while (totalMovedDistance < targetDistance)
+		float lastPosition = 0f;
+
+		while (elapsedTime < phaseDuration)
 		{
-			float progress = totalMovedDistance / targetDistance;
-			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(progress) : spinSpeed;
-			float deltaMove = Mathf.Max(currentSpeed * Time.deltaTime, MinDeltaMove);
+			elapsedTime += Time.deltaTime;
+			float progress = Mathf.Clamp01(elapsedTime / phaseDuration);
+			float curvePosition = positionCurve != null ? positionCurve.Evaluate(progress) : progress;
+			float currentPosition = curvePosition * targetDistance;
+			List<float> _SymbolBeginPostions = new List<float>(SymbolBeginPostions);
 
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-				rect.anchoredPosition += new Vector2(0, -deltaMove);
+				Vector3 pos = rect.anchoredPosition;
 
-				if (rect.anchoredPosition.y < -totalHeight / 2)
+				if (_SymbolBeginPostions[i] - currentPosition < -totalHeight / 2)
 				{
-					Vector3 pos = symbolImages[i].transform.localPosition;
-					pos.y = SymbolPostions[0];
-					symbolImages[i].transform.localPosition = pos;
+					// currentPosition
+					// _SymbolBeginPostions[0] -= config.symbolHeight;
+					symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
 
-					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
-					{
-						symbolImages[i].sprite = _targetSymbols[symbolsSetCount].sprite;
-						symbolsSetCount++;
-					}
-					else
-					{
-						symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
-					}
+					// if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
+					// {
+					// 	symbolImages[i].sprite = _targetSymbols[symbolsSetCount].sprite;
+					// 	symbolsSetCount++;
+					// }
+					// else
+					// {
+					// 	symbolImages[i].sprite = config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)].sprite;
+					// }
 				}
+				pos.y = _SymbolBeginPostions[i] - currentPosition;
+				if (_SymbolBeginPostions[i] - currentPosition < -totalHeight / 2)
+				{
+					pos.y = _SymbolBeginPostions[i] - currentPosition + totalHeight / 2;
+				}
+
+
+				symbolImages[i].transform.localPosition = pos;
 			}
 
-			totalMovedDistance += deltaMove;
+			lastPosition = currentPosition;
 			yield return null;
 		}
 
@@ -149,7 +162,7 @@ public class ReelAnimation : MonoBehaviour
 		{
 			Image symbolImage = symbolImages[i];
 			Vector3 pos = symbolImage.transform.localPosition;
-			pos.y = SymbolPostions[i];
+			pos.y = SymbolBeginPostions[i];
 			symbolImage.transform.localPosition = pos;
 		}
 	}
