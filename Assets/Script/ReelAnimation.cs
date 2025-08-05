@@ -27,7 +27,7 @@ public class ReelAnimation : MonoBehaviour
 
 	private void CalculateSpinParameters()
 	{
-		totalHeight = (config.symbolsPerReel - 2) * config.symbolHeight;
+		totalHeight = (config.adjustedSymbolsPerReel - 2) * config.symbolHeight;
 		fullCycleDistance = totalHeight + config.symbolHeight;
 		spinSpeed = (config.spinCycles * fullCycleDistance) / config.spinDuration;
 	}
@@ -115,7 +115,7 @@ public class ReelAnimation : MonoBehaviour
 				if (rect.anchoredPosition.y < -config.symbolHeight * 2f)
 				{
 					topestSymbolImagesIndex = i;
-					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, config.symbolHeight * (config.symbolsPerReel - 2));
+					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, config.symbolHeight * (config.adjustedSymbolsPerReel - 2));
 
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
@@ -136,7 +136,7 @@ public class ReelAnimation : MonoBehaviour
 
 		if (isFinalPhase)
 		{
-			float startY = (config.symbolsPerReel - 2) * config.symbolHeight;
+			float startY = (config.adjustedSymbolsPerReel - 2) * config.symbolHeight;
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
