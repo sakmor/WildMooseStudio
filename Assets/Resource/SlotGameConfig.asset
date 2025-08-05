@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31b44e9e16f0c6e40a474b24c00b7dca, type: 3}
   m_Name: SlotGameConfig
   m_EditorClassIdentifier: 
-  reelCount: 3
+  reelCount: 1
   symbolsPerReel: 3
   symbols:
   - name: "\u79AE\u7269"
@@ -42,8 +42,8 @@ MonoBehaviour:
   paylineJsonFile: {fileID: 4900000, guid: 3dae13fc64d3c2a42943bb89444b87de, type: 3}
   reelSpacing: 300
   symbolHeight: 300
-  spinDuration: 1
-  spinCycles: 1
+  spinDuration: 0.5
+  spinCycles: 2
   beginAccelerationCurve:
     serializedVersion: 2
     m_Curve:
