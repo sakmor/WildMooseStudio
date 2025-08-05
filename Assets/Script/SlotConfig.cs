@@ -35,6 +35,7 @@ public class SlotConfig : ScriptableObject
 
 	public int reelCount = 3;
 	public int symbolsPerReel = 3;
+	[System.NonSerialized]	public int adjustedSymbolsPerReel;
 	public SymbolData[] symbols; // 所有符號的資料
 	[SerializeField] private TextAsset paylineJsonFile; // 修改：單個 JSON 檔案
 	public Payline[] paylines { get; private set; } // 動態生成的 paylines 陣列
@@ -47,6 +48,9 @@ public class SlotConfig : ScriptableObject
 
 	private void OnEnable()
 	{
+		// 設定 遊戲
+		adjustedSymbolsPerReel = symbolsPerReel + 3;
+
 		// 從單個 JSON 檔案加載 paylines
 		if (paylineJsonFile != null)
 		{
@@ -61,14 +65,14 @@ public class SlotConfig : ScriptableObject
 						if (jsonPayline.symbolIndices != null && jsonPayline.symbolIndices.Length == reelCount)
 						{
 							// 驗證每個索引是否有效
-							bool isValid = jsonPayline.symbolIndices.All(index => index >= 0 && index < symbolsPerReel);
+							bool isValid = jsonPayline.symbolIndices.All(index => index >= 0 && index < adjustedSymbolsPerReel);
 							if (isValid)
 							{
 								loadedPaylines.Add(new Payline { symbolIndices = jsonPayline.symbolIndices });
 							}
 							else
 							{
-								Debug.LogWarning($"Invalid symbol indices in payline: {string.Join(",", jsonPayline.symbolIndices)}. Indices must be between 0 and {symbolsPerReel - 1}.");
+								Debug.LogWarning($"Invalid symbol indices in payline: {string.Join(",", jsonPayline.symbolIndices)}. Indices must be between 0 and {adjustedSymbolsPerReel - 1}.");
 							}
 						}
 						else

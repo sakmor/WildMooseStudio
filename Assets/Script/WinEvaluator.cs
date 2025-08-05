@@ -26,7 +26,7 @@ public class WinEvaluator
 			for (int i = 0; i < payline.symbolIndices.Length; i++)
 			{
 				int symbolIndex = payline.symbolIndices[i];
-				if (symbolIndex >= config.symbolsPerReel || i >= reels.Count)
+				if (symbolIndex >= config.adjustedSymbolsPerReel || i >= reels.Count)
 				{
 					isWin = false;
 					break;

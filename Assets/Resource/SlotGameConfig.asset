@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SlotGameConfig
   m_EditorClassIdentifier: 
   reelCount: 1
-  symbolsPerReel: 3
+  symbolsPerReel: 1
   symbols:
   - name: "\u79AE\u7269"
     sprite: {fileID: 21300000, guid: 150cbf260fa89aa43a2c6bb713eadd45, type: 3}
