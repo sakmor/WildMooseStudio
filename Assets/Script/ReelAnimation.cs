@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,6 @@ public class ReelAnimation : MonoBehaviour
 	private List<Image> symbolImages;
 	private SlotConfig config;
 	private bool isSpinning;
-	private float totalHeight;
 	private float fullCycleDistance;
 	private float spinSpeed;
 	private int topestSymbolImagesIndex = 0;
@@ -27,8 +27,7 @@ public class ReelAnimation : MonoBehaviour
 
 	private void CalculateSpinParameters()
 	{
-		totalHeight = (config.adjustedSymbolsPerReel - 2) * config.symbolHeight;
-		fullCycleDistance = totalHeight + config.symbolHeight;
+		fullCycleDistance = (config.adjustedSymbolsPerReel) * config.symbolHeight;
 		spinSpeed = (config.spinCycles * fullCycleDistance) / config.spinDuration;
 	}
 
@@ -80,9 +79,16 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
+		symbolImages.ForEach(e => e.color = Color.white);
+		Debug.Log("Start");
+		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, config.beginAccelerationCurve));
+		Debug.Log("Loop");
+		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
-		yield return StartCoroutine(UpdateSymbolPositions((fullCycleDistance-config.symbolHeight) / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
+		Debug.Log("End");
+		// Debug.Break();
+		yield return StartCoroutine(UpdateSymbolPositions((fullCycleDistance) / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
 		isSpinning = false;
 		OnSpinStopped?.Invoke();
@@ -99,13 +105,16 @@ public class ReelAnimation : MonoBehaviour
 			resultSymbols.Clear();
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
 			symbolImages[topestSymbolImagesIndex].sprite = _targetSymbols[symbolsSetCount].sprite;
-			resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
-			symbolsSetCount++;
+			// symbolImages[topestSymbolImagesIndex].color = Color.red;
+			// Debug.Break();
+			// resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
+			// symbolsSetCount++;
 		}
 
 		while (elapsed < duration)
 		{
-			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
+			// float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
+			float currentSpeed = spinSpeed;
 
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
