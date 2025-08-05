@@ -16,27 +16,27 @@ MonoBehaviour:
   symbolsPerReel: 3
   symbols:
   - name: M1
-    sprite: {fileID: 21300000, guid: d8d698e1ef9d24617a5de621bb80e027, type: 3}
+    sprite: {fileID: 21300000, guid: f505d48b849e543acbb180bad142db7e, type: 3}
     probability: 0.02
     payout: 5
   - name: M2
-    sprite: {fileID: 21300000, guid: ee1c61d5e6ae94de49fd08efa59b7cc8, type: 3}
+    sprite: {fileID: 21300000, guid: 95b6cfae052854d7b9e3e246b7b31928, type: 3}
     probability: 0.05
     payout: 2
   - name: M3
-    sprite: {fileID: 21300000, guid: faba0350e88e349949d6b175d48c0824, type: 3}
+    sprite: {fileID: 21300000, guid: 7375189a9604843038dbcb7b6591a686, type: 3}
     probability: 0.08
     payout: 0.8
   - name: M4
-    sprite: {fileID: 21300000, guid: 7e0d873f67c6d4e15b33c3750c52be38, type: 3}
+    sprite: {fileID: 21300000, guid: dde4daf2e12de47c09ad8c24372f8ad9, type: 3}
     probability: 0.15
     payout: 0.5
   - name: M5
-    sprite: {fileID: 21300000, guid: d686e291379014488a1a3cd50c7e7833, type: 3}
+    sprite: {fileID: 21300000, guid: d25ff5fb5d5154e89a8205e10cca1bfd, type: 3}
     probability: 0.3
     payout: 0.2
   - name: SC
-    sprite: {fileID: 21300000, guid: 0593323475014497c9a175f4a55dad8f, type: 3}
+    sprite: {fileID: 21300000, guid: 39794b085870b485ead81e3d665f5e72, type: 3}
     probability: 0.4
     payout: 0.1
   paylineJsonFile: {fileID: 4900000, guid: 398290adc44d3fe41a10ad0d53801523, type: 3}
