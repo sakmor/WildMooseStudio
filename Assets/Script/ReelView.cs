@@ -6,10 +6,11 @@ public class ReelView : MonoBehaviour
 {
 	private List<Image> symbolImages = new List<Image>();
 	private ReelAnimation animation;
-
+	private int extraSybolNumberLower = 1;
+	private int extraSybolNumberUpper = 2;
 	public void Initialize(SlotConfig config, GameObject symbolPrefab)
 	{
-		float startY = (config.symbolsPerReel - 1) * config.symbolHeight;
+		float startY = (config.symbolsPerReel - 2) * config.symbolHeight;
 		for (int i = 0; i < config.symbolsPerReel; i++)
 		{
 			GameObject symbolObj = Instantiate(symbolPrefab, transform);
