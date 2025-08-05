@@ -28,7 +28,7 @@ public class SlotModel
 		IsSpinning = false;
 		for (int i = 0; i < config.reelCount; i++)
 		{
-			Reels.Add(new Reel(config.symbolsPerReel));
+			Reels.Add(new Reel(config.adjustedSymbolsPerReel));
 		}
 	}
 
@@ -52,7 +52,7 @@ public class SlotModel
 	private List<SlotConfig.SymbolData> GenerateRandomSymbols()
 	{
 		List<SlotConfig.SymbolData> symbols = new List<SlotConfig.SymbolData>();
-		for (int i = 0; i < config.symbolsPerReel; i++)
+		for (int i = 0; i < config.adjustedSymbolsPerReel; i++)
 		{
 			symbols.Add(config.symbols[UnityEngine.Random.Range(0, config.symbols.Length)]);
 		}

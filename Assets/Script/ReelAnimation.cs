@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,6 @@ public class ReelAnimation : MonoBehaviour
 	private List<Image> symbolImages;
 	private SlotConfig config;
 	private bool isSpinning;
-	private float totalHeight;
 	private float fullCycleDistance;
 	private float spinSpeed;
 	private int topestSymbolImagesIndex = 0;
@@ -27,8 +27,7 @@ public class ReelAnimation : MonoBehaviour
 
 	private void CalculateSpinParameters()
 	{
-		totalHeight = (config.symbolsPerReel - 1) * config.symbolHeight;
-		fullCycleDistance = totalHeight + config.symbolHeight;
+		fullCycleDistance = (config.adjustedSymbolsPerReel) * config.symbolHeight;
 		spinSpeed = (config.spinCycles * fullCycleDistance) / config.spinDuration;
 	}
 
@@ -80,9 +79,16 @@ public class ReelAnimation : MonoBehaviour
 
 	private IEnumerator SpinAnimation(List<SlotConfig.SymbolData> targetSymbols)
 	{
+		symbolImages.ForEach(e => e.color = Color.white);
+		Debug.Log("Start");
+		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, false, null, config.beginAccelerationCurve));
+		Debug.Log("Loop");
+		// Debug.Break();
 		yield return StartCoroutine(UpdateSymbolPositions(config.spinDuration, false, null, null));
-		yield return StartCoroutine(UpdateSymbolPositions(fullCycleDistance / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
+		Debug.Log("End");
+		// Debug.Break();
+		yield return StartCoroutine(UpdateSymbolPositions((fullCycleDistance) / spinSpeed, true, targetSymbols, config.finalDecelerationCurve));
 
 		isSpinning = false;
 		OnSpinStopped?.Invoke();
@@ -92,30 +98,33 @@ public class ReelAnimation : MonoBehaviour
 	{
 		float elapsed = 0;
 		int symbolsSetCount = 0;
-	
+
 		List<SlotConfig.SymbolData> _targetSymbols = null;
 		if (isFinalPhase)
 		{
 			resultSymbols.Clear();
 			_targetSymbols = targetSymbols.AsEnumerable().Reverse().ToList();
 			symbolImages[topestSymbolImagesIndex].sprite = _targetSymbols[symbolsSetCount].sprite;
-			resultSymbols.Insert(0,_targetSymbols[symbolsSetCount]);
-			symbolsSetCount++;
+			// symbolImages[topestSymbolImagesIndex].color = Color.red;
+			// Debug.Break();
+			// resultSymbols.Insert(0, _targetSymbols[symbolsSetCount]);
+			// symbolsSetCount++;
 		}
 
 		while (elapsed < duration)
 		{
-			float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
+			// float currentSpeed = speedCurve != null ? spinSpeed * speedCurve.Evaluate(elapsed / duration) : spinSpeed;
+			float currentSpeed = spinSpeed;
 
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
 				rect.anchoredPosition += new Vector2(0, -Time.deltaTime * currentSpeed);
 
-				if (rect.anchoredPosition.y < -totalHeight / 2)
+				if (rect.anchoredPosition.y < -config.symbolHeight * 2f)
 				{
 					topestSymbolImagesIndex = i;
-					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, rect.anchoredPosition.y + fullCycleDistance);
+					rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, config.symbolHeight * (config.adjustedSymbolsPerReel - 2));
 
 					if (isFinalPhase && symbolsSetCount < targetSymbols.Count)
 					{
@@ -136,10 +145,11 @@ public class ReelAnimation : MonoBehaviour
 
 		if (isFinalPhase)
 		{
+			float startY = (config.adjustedSymbolsPerReel - 2) * config.symbolHeight;
 			for (int i = 0; i < symbolImages.Count; i++)
 			{
 				RectTransform rect = symbolImages[i].GetComponent<RectTransform>();
-				float targetY = Mathf.Ceil(rect.anchoredPosition.y / config.symbolHeight) * config.symbolHeight;
+				float targetY = startY - i * config.symbolHeight;
 				rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, targetY);
 			}
 
