@@ -14,6 +14,7 @@ public class WinEvaluator
 	{
 		winAmount = 0;
 		winningPaylineIndices = new List<int>();
+		const int indexOffset = 1; // 偏移量，跳過頂部兩個演出用符號
 
 		// 檢查每條 payline
 		for (int paylineIndex = 0; paylineIndex < config.paylines.Length; paylineIndex++)
@@ -25,7 +26,7 @@ public class WinEvaluator
 			// 檢查 payline 中的每個符號
 			for (int i = 0; i < payline.symbolIndices.Length; i++)
 			{
-				int symbolIndex = payline.symbolIndices[i];
+				int symbolIndex = payline.symbolIndices[i] + indexOffset; // 偏移索引
 				if (symbolIndex >= config.adjustedSymbolsPerReel || i >= reels.Count)
 				{
 					isWin = false;

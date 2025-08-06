@@ -189,7 +189,7 @@ public class ReelAnimation : MonoBehaviour
 			{
 				if (symbolIndex >= 0 && symbolIndex < symbolImages.Count)
 				{
-					Image targetImage = symbolImages[symbolIndex];
+					Image targetImage = symbolImages[symbolIndex+2];
 					Color originalColor = targetImage.color;
 					float duration = 0.2f;
 
