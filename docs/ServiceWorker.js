@@ -1,4 +1,4 @@
-const cacheName = "DefaultCompany-WildMooseStudio-0.1";
+const cacheName = "DefaultCompany-WildMooseStudio-0.2";
 const contentToCache = [
     "Build/docs.loader.js",
     "Build/docs.framework.js",
