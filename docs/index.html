@@ -56,13 +56,15 @@
 		}
 
 		var buildUrl = "Build";
-		var loaderUrl = buildUrl + "/docs.loader.js";
+		// Generate timestamp to prevent caching
+		var timestamp = Date.now();
+		var loaderUrl = buildUrl + "/docs.loader.js?t=" + timestamp;
 		var config = {
 			arguments: [],
-			dataUrl: buildUrl + "/docs.data",
-			frameworkUrl: buildUrl + "/docs.framework.js",
-			codeUrl: buildUrl + "/docs.wasm",
-			streamingAssetsUrl: "StreamingAssets",
+			dataUrl: buildUrl + "/docs.data?t=" + timestamp,
+			frameworkUrl: buildUrl + "/docs.framework.js?t=" + timestamp,
+			codeUrl: buildUrl + "/docs.wasm?t=" + timestamp,
+			streamingAssetsUrl: "StreamingAssets?t=" + timestamp,
 			companyName: "DefaultCompany",
 			productName: "WildMooseStudio",
 			productVersion: "0.1",
